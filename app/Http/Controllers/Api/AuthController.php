@@ -7,7 +7,9 @@ use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
-use App\Repositories\Contracts\AuthRepositoryInterface;
+use App\Http\Resources\AuthTokenResource;
+use App\Http\Resources\UserResource;
+use App\Services\AuthService;
 use Illuminate\Support\Facades\Log;
 use OpenApi\Attributes as OA;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
@@ -15,7 +17,7 @@ use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
 class AuthController extends Controller
 {
     public function __construct(
-        protected AuthRepositoryInterface $authRepository
+        protected AuthService $authService
     ) {}
 
     #[OA\Post(
@@ -52,7 +54,7 @@ class AuthController extends Controller
     public function login(LoginRequest $request)
     {
         try {
-            $result = $this->authRepository->login($request->validated());
+            $result = $this->authService->login($request->validated());
 
             if (! $result) {
                 return ResponseHelper::error('Email atau password salah', 401);
@@ -92,9 +94,9 @@ class AuthController extends Controller
     public function register(RegisterRequest $request)
     {
         try {
-            $user = $this->authRepository->register($request->validated());
+            $user = $this->authService->register($request->validated());
 
-            return ResponseHelper::success($user, 'Registrasi berhasil');
+            return ResponseHelper::success(new UserResource($user), 'Registrasi berhasil');
         } catch (\Throwable $e) {
             Log::error('Error saat register: '.$e->getMessage(), ['exception' => $e]);
 
@@ -114,7 +116,7 @@ class AuthController extends Controller
     )]
     public function logout()
     {
-        if (! $this->authRepository->logout()) {
+        if (! $this->authService->logout()) {
             return ResponseHelper::error('Gagal logout.', 500);
         }
 
@@ -134,7 +136,7 @@ class AuthController extends Controller
     public function refresh()
     {
         try {
-            $result = $this->authRepository->refreshToken();
+            $result = $this->authService->refreshToken();
 
             return ResponseHelper::success($result, 'Token berhasil diperbarui');
         } catch (JWTException $e) {
@@ -155,7 +157,7 @@ class AuthController extends Controller
     public function me()
     {
         return ResponseHelper::success(
-            $this->authRepository->getAuthenticatedUser(),
+            new UserResource($this->authService->me()),
             'Data user berhasil diambil'
         );
     }
