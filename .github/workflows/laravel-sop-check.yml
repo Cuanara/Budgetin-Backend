@@ -47,12 +47,7 @@ jobs:
           fi
 
           echo ""
-          # Catatan: pengecekan "backend tidak boleh punya migration/seeder" sengaja dihapus,
-          # karena repo ini menggabungkan aplikasi Laravel dan database (migration/seeder).
-          # Validasi migration/seeder dilakukan di job validate_database_service.
-
-          echo ""
-          echo "=== 3. Controller SOP check ==="
+          echo "=== 2. Controller SOP check ==="
 
           if [ -d app/Http/Controllers ]; then
             grep -R --include="*.php" -nE "use App\\\\Repositories\\\\|App\\\\Repositories\\\\" app/Http/Controllers \
@@ -82,7 +77,7 @@ jobs:
           fi
 
           echo ""
-          echo "=== 4. Eloquent query outside Repository check ==="
+          echo "=== 3. Eloquent query outside Repository check ==="
 
           if [ -d app ]; then
 
@@ -100,7 +95,7 @@ jobs:
           fi
 
           echo ""
-          echo "=== 5. FormRequest check ==="
+          echo "=== 4. FormRequest check ==="
 
           if [ -d app/Http/Requests ]; then
 
