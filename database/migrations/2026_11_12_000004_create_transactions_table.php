@@ -16,8 +16,8 @@ return new class extends Migration
                 $table->uuid('id')->primary();
                 $table->foreignId('user_id')->constrained('users');
                 $table->foreignUuid('wallet_id')->constrained('wallets');
+                $table->foreignUuid('category_id')->nullable()->constrained('categories');
                 $table->enum('type', ['income', 'expense']);
-                $table->enum('category', ['makan', 'transportasi', 'jajan', 'lainnya', 'pemasukan'])->nullable();
                 $table->decimal('amount', 15, 2);
                 $table->date('transaction_date');
                 $table->text('notes')->nullable();
@@ -35,4 +35,3 @@ return new class extends Migration
         Schema::dropIfExists('transactions');
     }
 };
-

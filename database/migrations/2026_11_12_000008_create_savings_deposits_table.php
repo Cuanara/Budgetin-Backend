@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('setoran_tabungan')) {
-            Schema::create('setoran_tabungan', function (Blueprint $table) {
+        if (!Schema::hasTable('savings_deposits')) {
+            Schema::create('savings_deposits', function (Blueprint $table) {
                 $table->uuid('id')->primary();
-                $table->foreignUuid('target_tabungan_id')->constrained('target_tabungan');
+                $table->foreignUuid('savings_goal_id')->constrained('savings_goals');
                 $table->foreignUuid('wallet_id')->nullable()->constrained('wallets');
-                $table->decimal('nominal', 15, 2);
-                $table->date('tanggal_setor');
-                $table->string('catatan', 255)->nullable();
+                $table->decimal('amount', 15, 2);
+                $table->date('deposit_date');
+                $table->string('notes', 255)->nullable();
                 $table->softDeletes();
                 $table->timestamps();
             });
@@ -30,7 +30,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('setoran_tabungan');
+        Schema::dropIfExists('savings_deposits');
     }
 };
 

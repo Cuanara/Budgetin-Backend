@@ -15,8 +15,8 @@ return new class extends Migration
             Schema::create('wallets', function (Blueprint $table) {
                 $table->uuid('id')->primary();
                 $table->foreignId('user_id')->constrained('users');
-                $table->string('name', 100)->default('Dompet Utama');
-                $table->decimal('saldo', 15, 2)->default(0);
+                $table->string('name', 100)->default('Main Wallet');
+                $table->decimal('balance', 15, 2)->default(0);
                 $table->softDeletes();
                 $table->timestamps();
             });
@@ -31,4 +31,3 @@ return new class extends Migration
         Schema::dropIfExists('wallets');
     }
 };
-

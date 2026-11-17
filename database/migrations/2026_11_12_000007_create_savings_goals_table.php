@@ -11,15 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('target_tabungan')) {
-            Schema::create('target_tabungan', function (Blueprint $table) {
+        if (!Schema::hasTable('savings_goals')) {
+            Schema::create('savings_goals', function (Blueprint $table) {
                 $table->uuid('id')->primary();
                 $table->foreignId('user_id')->constrained('users');
-                $table->string('nama_target', 150);
-                $table->decimal('target_nominal', 15, 2);
-                $table->decimal('nominal_terkumpul', 15, 2)->default(0);
-                $table->date('tanggal_target')->nullable();
-                $table->enum('status', ['aktif', 'tercapai', 'dibatalkan'])->default('aktif');
+                $table->string('name', 150);
+                $table->decimal('target_amount', 15, 2);
+                $table->decimal('current_amount', 15, 2)->default(0);
+                $table->date('target_date')->nullable();
+                $table->enum('status', ['active', 'completed', 'cancelled'])->default('active');
                 $table->softDeletes();
                 $table->timestamps();
             });
@@ -31,7 +31,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('target_tabungan');
+        Schema::dropIfExists('savings_goals');
     }
 };
 

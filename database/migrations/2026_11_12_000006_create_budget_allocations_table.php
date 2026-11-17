@@ -15,7 +15,8 @@ return new class extends Migration
             Schema::create('budget_allocations', function (Blueprint $table) {
                 $table->uuid('id')->primary();
                 $table->foreignUuid('budget_id')->constrained('budgets');
-                $table->enum('category', ['makan', 'transportasi', 'jajan', 'lainnya', 'tabungan']);
+                $table->foreignUuid('category_id')->nullable()->constrained('categories');
+                $table->string('custom_name', 100)->nullable();
                 $table->decimal('percentage', 5, 2);
                 $table->decimal('allocated_amount', 15, 2);
                 $table->softDeletes();
@@ -32,4 +33,3 @@ return new class extends Migration
         Schema::dropIfExists('budget_allocations');
     }
 };
-
