@@ -19,7 +19,7 @@ return new class extends Migration
                 $table->foreignUuid('category_id')->nullable()->constrained('categories');
                 $table->enum('type', ['income', 'expense']);
                 $table->decimal('amount', 15, 2);
-                $table->date('transaction_date');
+                $table->dateTime('transaction_date');
                 $table->text('notes')->nullable();
                 $table->softDeletes();
                 $table->timestamps();
