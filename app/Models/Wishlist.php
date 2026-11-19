@@ -12,6 +12,8 @@ class Wishlist extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
 
+    protected $table = 'wishlists';
+
     protected $fillable = [
         'user_id',
         'savings_goal_id',

@@ -12,6 +12,8 @@ class SavingsDeposit extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
 
+    protected $table = 'savings_deposits';
+
     protected $fillable = [
         'savings_goal_id',
         'wallet_id',

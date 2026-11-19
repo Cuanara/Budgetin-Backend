@@ -12,6 +12,8 @@ class Transaction extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
 
+    protected $table = 'transactions';
+
     protected $fillable = [
         'user_id',
         'wallet_id',
@@ -20,14 +22,34 @@ class Transaction extends Model
         'amount',
         'transaction_date',
         'notes',
+        'description',
     ];
 
-    protected function casts(): array
+    protected $casts = [
+        'amount' => 'decimal:2',
+        'transaction_date' => 'datetime',
+    ];
+
+    protected static function booted(): void
     {
-        return [
-            'amount' => 'decimal:2',
-            'transaction_date' => 'datetime',
-        ];
+        static::creating(function (Transaction $transaction) {
+            if (empty($transaction->wallet_id) && !empty($transaction->user_id)) {
+                $wallet = Wallet::where('user_id', $transaction->user_id)->first();
+                if ($wallet) {
+                    $transaction->wallet_id = $wallet->id;
+                }
+            }
+        });
+    }
+
+    public function getDescriptionAttribute(): ?string
+    {
+        return $this->attributes['notes'] ?? null;
+    }
+
+    public function setDescriptionAttribute(?string $value): void
+    {
+        $this->attributes['notes'] = $value;
     }
 
     public function user(): BelongsTo
@@ -45,4 +67,3 @@ class Transaction extends Model
         return $this->belongsTo(Category::class);
     }
 }
-

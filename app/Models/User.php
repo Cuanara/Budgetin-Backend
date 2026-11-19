@@ -52,6 +52,8 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser, JWTS
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
 
+    protected $table = 'users';
+
     /**
      * Get the attributes that should be cast.
      *

@@ -13,18 +13,17 @@ class Wallet extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
 
+    protected $table = 'wallets';
+
     protected $fillable = [
         'user_id',
         'name',
         'balance',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'balance' => 'decimal:2',
-        ];
-    }
+    protected $casts = [
+        'balance' => 'decimal:2',
+    ];
 
     public function user(): BelongsTo
     {
@@ -41,4 +40,3 @@ class Wallet extends Model
         return $this->hasMany(SavingsDeposit::class);
     }
 }
-

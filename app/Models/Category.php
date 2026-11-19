@@ -13,6 +13,8 @@ class Category extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
 
+    protected $table = 'categories';
+
     protected $fillable = [
         'user_id',
         'name',
@@ -35,4 +37,3 @@ class Category extends Model
         return $this->hasMany(BudgetAllocation::class);
     }
 }
-

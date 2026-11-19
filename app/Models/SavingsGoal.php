@@ -13,6 +13,8 @@ class SavingsGoal extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
 
+    protected $table = 'savings_goals';
+
     protected $fillable = [
         'user_id',
         'name',

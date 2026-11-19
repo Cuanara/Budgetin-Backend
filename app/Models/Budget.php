@@ -13,6 +13,8 @@ class Budget extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
 
+    protected $table = 'budgets';
+
     protected $fillable = [
         'user_id',
         'month',

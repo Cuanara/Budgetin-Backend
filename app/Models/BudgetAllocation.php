@@ -12,6 +12,8 @@ class BudgetAllocation extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
 
+    protected $table = 'budget_allocations';
+
     protected $fillable = [
         'budget_id',
         'category_id',
