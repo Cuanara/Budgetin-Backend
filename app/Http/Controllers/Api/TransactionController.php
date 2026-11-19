@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTransactionRequest;
+use App\Http\Resources\TransactionResource;
 use App\Services\TransactionService;
 use Illuminate\Http\JsonResponse;
 
@@ -16,15 +17,17 @@ class TransactionController extends Controller
         $this->transactionService = $transactionService;
     }
 
-    public function store(StoreTransactionRequest $request): JsonResponse
+    public function store(StoreTransactionRequest $request)
     {
         $transaction = $this->transactionService->createTransaction(
             $request->validated()
         );
 
-        return response()->json([
-            'message' => 'Transaksi berhasil disimpan.',
-            'data' => $transaction,
-        ], 201);
+        return (new TransactionResource($transaction))
+            ->additional([
+                'message' => 'Transaksi berhasil disimpan.',
+            ])
+            ->response()
+            ->setStatusCode(201);
     }
 }
