@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a350a6949c2e921daf3d251409a05d41",
+    "content-hash": "de5c9d07847da92dfe92443792820810",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -197,16 +197,16 @@
         },
         {
             "name": "darkaonline/l5-swagger",
-            "version": "11.3.1",
+            "version": "11.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/DarkaOnLine/L5-Swagger.git",
-                "reference": "e01ec3ff575f1ef081be5207be6962dcb06c84ae"
+                "reference": "d75626c339f50f1eb45159dc615c02fdf5287037"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/DarkaOnLine/L5-Swagger/zipball/e01ec3ff575f1ef081be5207be6962dcb06c84ae",
-                "reference": "e01ec3ff575f1ef081be5207be6962dcb06c84ae",
+                "url": "https://api.github.com/repos/DarkaOnLine/L5-Swagger/zipball/d75626c339f50f1eb45159dc615c02fdf5287037",
+                "reference": "d75626c339f50f1eb45159dc615c02fdf5287037",
                 "shasum": ""
             },
             "require": {
@@ -222,7 +222,7 @@
                 "orchestra/testbench": "^11.0 || ^10.0 || ^9.0 || ^8.0 || 7.* || ^6.15 || 5.*",
                 "php-coveralls/php-coveralls": "^2.0",
                 "phpstan/phpstan": "^2.1",
-                "phpunit/phpunit": "^11.0"
+                "phpunit/phpunit": "^11.0 || ^12.0 || ^13.4"
             },
             "type": "library",
             "extra": {
@@ -265,7 +265,7 @@
             ],
             "support": {
                 "issues": "https://github.com/DarkaOnLine/L5-Swagger/issues",
-                "source": "https://github.com/DarkaOnLine/L5-Swagger/tree/11.3.1"
+                "source": "https://github.com/DarkaOnLine/L5-Swagger/tree/11.4.0"
             },
             "funding": [
                 {
@@ -273,7 +273,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-11-09T07:11:09+00:00"
+            "time": "2026-11-17T07:33:27+00:00"
         },
         {
             "name": "dasprid/enum",

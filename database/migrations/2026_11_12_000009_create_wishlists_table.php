@@ -22,8 +22,7 @@ return new class extends Migration
                 $table->decimal('saved_amount', 15, 2)->default(0);
                 $table->unsignedInteger('delay_days')->default(7);
                 $table->date('delay_until')->nullable();
-                $table->text('notes')->nullable();
-                $table->enum('status', ['delayed', 'pending_decision', 'bought', 'cancelled', 'archived'])->default('delayed');
+                $table->enum('status', ['delayed', 'pending_decision', 'bought', 'cancelled'])->default('delayed');
                 $table->softDeletes();
                 $table->timestamps();
             });
@@ -38,3 +37,4 @@ return new class extends Migration
         Schema::dropIfExists('wishlists');
     }
 };
+
