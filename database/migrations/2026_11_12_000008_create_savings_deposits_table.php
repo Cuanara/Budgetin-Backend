@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('savings_deposits')) {
+        if (! Schema::hasTable('savings_deposits')) {
             Schema::create('savings_deposits', function (Blueprint $table) {
                 $table->uuid('id')->primary();
                 $table->foreignUuid('savings_goal_id')->constrained('savings_goals');
@@ -33,4 +33,3 @@ return new class extends Migration
         Schema::dropIfExists('savings_deposits');
     }
 };
-

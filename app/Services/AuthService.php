@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use App\Exceptions\AuthException;
 use App\Repositories\Contracts\AuthRepositoryInterface;
+use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
 
 class AuthService
 {
@@ -14,7 +16,7 @@ class AuthService
      * Login user dan kembalikan data token.
      * Mengembalikan null jika email/password salah.
      *
-     * @throws \App\Exceptions\AuthException  Akun disuspend / email belum diverifikasi
+     * @throws AuthException Akun disuspend / email belum diverifikasi
      */
     public function login(array $credentials): ?array
     {
@@ -42,7 +44,7 @@ class AuthService
     /**
      * Refresh token JWT.
      *
-     * @throws \PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException
+     * @throws JWTException
      */
     public function refreshToken(): array
     {

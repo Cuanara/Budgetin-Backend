@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('wallets')) {
+        if (! Schema::hasTable('wallets')) {
             Schema::create('wallets', function (Blueprint $table) {
                 $table->uuid('id')->primary();
                 $table->foreignId('user_id')->constrained('users');
