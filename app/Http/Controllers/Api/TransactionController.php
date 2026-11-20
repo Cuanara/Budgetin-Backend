@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTransactionRequest;
 use App\Http\Resources\TransactionResource;
-use App\Http\Resources\TransactionCollection;
 use App\Services\TransactionService;
 use Illuminate\Http\Request;
 
@@ -105,7 +104,7 @@ class TransactionController extends Controller
 
     public function index(Request $request)
     {
-        $perPage = $request->query('per_page', 20);
+        $perPage = $request->query('per_page', 10);
         $startDate = $request->query('start_date');
         $endDate = $request->query('end_date');
         $categoryId = $request->query('category_id');
@@ -127,7 +126,7 @@ class TransactionController extends Controller
             );
         }
 
-        return (new TransactionCollection($transactions))
+        return TransactionResource::collection($transactions)
             ->additional(['message' => 'Riwayat transaksi berhasil diambil.'])
             ->response()
             ->setStatusCode(200);
