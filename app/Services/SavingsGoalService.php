@@ -3,44 +3,55 @@
 namespace App\Services;
 
 use App\Models\SavingsGoal;
+use App\Repositories\Contracts\SavingsGoalRepositoryInterface;
 use Illuminate\Support\Facades\Auth;
 
 class SavingsGoalService
 {
+    protected SavingsGoalRepositoryInterface $savingsGoalRepository;
+
+    public function __construct(
+        SavingsGoalRepositoryInterface $savingsGoalRepository
+    ) {
+        $this->savingsGoalRepository = $savingsGoalRepository;
+    }
+
     public function getAll()
     {
-        return SavingsGoal::where('user_id', Auth::id())
-            ->latest()
-            ->get();
+        return $this->savingsGoalRepository->getAllByUser(
+            (int) Auth::guard('api')->id()
+        );
     }
 
-    public function create(array $data)
+    public function create(array $data): SavingsGoal
     {
-        $data['user_id'] = Auth::id();
+        $data['user_id'] = Auth::guard('api')->id();
 
-        return SavingsGoal::create($data);
+        return $this->savingsGoalRepository->create($data);
     }
 
-    public function getById(string $id)
+    public function getById(string $id): SavingsGoal
     {
-        return SavingsGoal::where('user_id', Auth::id())
-            ->with('deposits')
-            ->findOrFail($id);
+        return $this->savingsGoalRepository->findByUser(
+            $id,
+            (int) Auth::guard('api')->id()
+        );
     }
 
-    public function update(string $id, array $data)
+    public function update(string $id, array $data): SavingsGoal
     {
         $savingsGoal = $this->getById($id);
 
-        $savingsGoal->update($data);
-
-        return $savingsGoal->fresh();
+        return $this->savingsGoalRepository->update(
+            $savingsGoal,
+            $data
+        );
     }
 
     public function delete(string $id): bool
     {
         $savingsGoal = $this->getById($id);
 
-        return $savingsGoal->delete();
+        return $this->savingsGoalRepository->delete($savingsGoal);
     }
 }
