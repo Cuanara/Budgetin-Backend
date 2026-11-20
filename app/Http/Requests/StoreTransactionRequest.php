@@ -16,8 +16,10 @@ class StoreTransactionRequest extends FormRequest
         return [
             'category_id' => [
                 'nullable',
-                'integer',
                 'exists:categories,id',
+            ],
+            'wallet_id' => [
+                'exists:wallets,id',
             ],
             'type' => [
                 'required',

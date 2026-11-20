@@ -14,4 +14,5 @@ Route::middleware('auth:api')->group(function () {
 
     // Transaction
     Route::post('transactions', [TransactionController::class, 'store']);
+    Route::get('transactions', [TransactionController::class, 'index']); // riwayat transaksi
 });
