@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreSavingsDepositRequest;
+use App\Http\Resources\SavingsDepositResource;
 use App\Services\SavingsDepositService;
 
 class SavingsDepositController extends Controller
@@ -19,11 +20,10 @@ class SavingsDepositController extends Controller
     {
         $deposits = $this->savingsDepositService->getAll($savingsGoalId);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Riwayat setoran berhasil diambil.',
-            'data' => $deposits,
-        ]);
+        return SavingsDepositResource::collection($deposits)
+            ->additional([
+                'message' => 'Riwayat setoran berhasil diambil.',
+            ]);
     }
 
     public function store(
@@ -35,10 +35,11 @@ class SavingsDepositController extends Controller
             $request->validated()
         );
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Setoran tabungan berhasil disimpan.',
-            'data' => $deposit,
-        ], 201);
+        return (new SavingsDepositResource($deposit))
+            ->additional([
+                'message' => 'Setoran tabungan berhasil disimpan.',
+            ])
+            ->response()
+            ->setStatusCode(201);
     }
 }
