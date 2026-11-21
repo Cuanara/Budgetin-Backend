@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Exceptions\AuthException;
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\LoginGoogleRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Resources\TokenResource;
@@ -41,7 +42,7 @@ class AuthController extends Controller
                 description: 'Login berhasil'
             ),
             new OA\Response(response: 401, description: 'Email atau password salah'),
-            new OA\Response(response: 403, description: 'Akun disuspend/email belum diverifikasi'),
+            new OA\Response(response: 403, description: 'Email belum diverifikasi. Silakan cek email Anda'),
             new OA\Response(response: 422, description: 'Validasi gagal'),
         ]
     )]
@@ -55,6 +56,49 @@ class AuthController extends Controller
             }
 
             return ResponseHelper::success(new TokenResource($token), 'Login berhasil');
+        } catch (AuthException $e) {
+            return ResponseHelper::error($e->getMessage(), $e->getStatusCode());
+        } catch (\Throwable $e) {
+            Log::error('Error saat login: '.$e->getMessage(), ['exception' => $e]);
+
+            return ResponseHelper::error('Terjadi kesalahan pada server', 500);
+        }
+    }
+
+    #[OA\Post(
+        path: '/api/login-google',
+        summary: 'Login Google user',
+        tags: ['Auth'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['credential', 'device_name'],
+                properties: [
+                    new OA\Property(property: 'credential', type: 'string', example: 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjFhMmIzYzRkNWU2ZiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhdWQiOiIxMjM0NTY3ODkwLWFiYy5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsInN1YiI6IjEwODc2NTQzMjEwOTg3NjU0MzIxMCIsImVtYWlsIjoiYnVkaUBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZX0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'),
+                    new OA\Property(property: 'device_name', type: 'string', example: 'Chrome - Windows'),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Login berhasil'
+            ),
+            new OA\Response(response: 401, description: 'Token Google tidak valid atau sudah kedaluwarsa'),
+            new OA\Response(response: 403, description: 'Email akun Google belum terverifikasi'),
+            new OA\Response(response: 422, description: 'Validasi gagal'),
+        ]
+    )]
+    public function loginGoogle(LoginGoogleRequest $request): JsonResponse
+    {
+        try {
+            $token = $this->authService->verifyIdTokenGoogle($request->validated());
+
+            if (! $token) {
+                return ResponseHelper::error('Token Google tidak valid atau sudah kedaluwarsa', 401);
+            }
+
+            return ResponseHelper::success(new TokenResource($token), 'Login Google berhasil');
         } catch (AuthException $e) {
             return ResponseHelper::error($e->getMessage(), $e->getStatusCode());
         } catch (\Throwable $e) {

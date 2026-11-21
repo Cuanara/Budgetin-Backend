@@ -2,21 +2,44 @@
 
 namespace App\Repositories\Contracts;
 
+use App\Models\User;
+
+/**
+ * @extends BaseRepositoryInterface<User>
+ */
 interface AuthRepositoryInterface extends BaseRepositoryInterface
 {
-    public function createOrUpdateGoogleUser(array $googleData);
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function verifyIdToken(string $idToken): ?array;
 
-    public function login(array $credentials): ?string;
+    public function loginWithUser(User $user): string;
 
-    public function logout($request = null): bool;
+    /**
+     * @param  array<string, mixed>  $credentials
+     */
+    public function loginEmail(array $credentials): ?string;
+
+    public function logout(): bool;
 
     public function refreshToken(): string;
 
-    public function findUserByEmail(string $email);
+    public function findByGoogleId(string $googleId): ?User;
 
-    public function updateActiveStatus(string $userId, bool $isActive);
+    public function findByEmail(string $email): ?User;
 
-    public function findResetToken(string $email);
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
+    public function createGoogleUser(array $attributes): User;
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
+    public function updateGoogleData(User $user, array $attributes): User;
+
+    public function updateActiveStatus(string $userId, bool $isActive): int;
 
     public function saveResetToken(string $email, string $hashedOtp): void;
 
@@ -26,11 +49,9 @@ interface AuthRepositoryInterface extends BaseRepositoryInterface
 
     public function markTokenAsVerified(string $email, string $verifiedToken): void;
 
-    public function findByVerifiedToken(string $verifiedToken);
-
     public function saveEmailVerificationOtp(string $email, string $hashedOtp): void;
 
-    public function findEmailVerificationOtp(string $email);
+    public function findEmailVerificationOtp(string $email): ?object;
 
     public function deleteEmailVerificationOtp(string $email): void;
 
