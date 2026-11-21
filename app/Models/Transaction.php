@@ -33,7 +33,7 @@ class Transaction extends Model
     protected static function booted(): void
     {
         static::creating(function (Transaction $transaction) {
-            if (empty($transaction->wallet_id) && !empty($transaction->user_id)) {
+            if (empty($transaction->wallet_id) && ! empty($transaction->user_id)) {
                 $wallet = Wallet::where('user_id', $transaction->user_id)->first();
                 if ($wallet) {
                     $transaction->wallet_id = $wallet->id;

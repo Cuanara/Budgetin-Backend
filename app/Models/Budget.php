@@ -41,4 +41,3 @@ class Budget extends Model
         return $this->hasMany(BudgetAllocation::class);
     }
 }
-

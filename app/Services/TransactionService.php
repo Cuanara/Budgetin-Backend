@@ -18,7 +18,7 @@ class TransactionService
 
     public function createTransaction(array $data): Transaction
     {
-       $data['user_id'] = Auth::guard('api')->id();
+        $data['user_id'] = Auth::guard('api')->id();
 
         return $this->transactionRepository->create($data);
     }

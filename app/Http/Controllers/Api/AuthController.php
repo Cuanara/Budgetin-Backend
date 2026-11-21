@@ -7,7 +7,6 @@ use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
-use App\Http\Resources\AuthTokenResource;
 use App\Http\Resources\UserResource;
 use App\Services\AuthService;
 use Illuminate\Support\Facades\Log;
@@ -46,9 +45,9 @@ class AuthController extends Controller
                     ]
                 )
             ),
-            new OA\Response(response: 401, description: 'Email atau password salah', content: new OA\JsonContent()),
-            new OA\Response(response: 403, description: 'Akun disuspend / email belum diverifikasi', content: new OA\JsonContent()),
-            new OA\Response(response: 422, description: 'Validasi gagal', content: new OA\JsonContent()),
+            new OA\Response(response: 401, description: 'Email atau password salah', content: new OA\JsonContent),
+            new OA\Response(response: 403, description: 'Akun disuspend / email belum diverifikasi', content: new OA\JsonContent),
+            new OA\Response(response: 422, description: 'Validasi gagal', content: new OA\JsonContent),
         ]
     )]
     public function login(LoginRequest $request)
@@ -87,8 +86,8 @@ class AuthController extends Controller
             )
         ),
         responses: [
-            new OA\Response(response: 200, description: 'Registrasi berhasil', content: new OA\JsonContent()),
-            new OA\Response(response: 422, description: 'Validasi gagal', content: new OA\JsonContent()),
+            new OA\Response(response: 200, description: 'Registrasi berhasil', content: new OA\JsonContent),
+            new OA\Response(response: 422, description: 'Validasi gagal', content: new OA\JsonContent),
         ]
     )]
     public function register(RegisterRequest $request)
@@ -110,8 +109,8 @@ class AuthController extends Controller
         tags: ['Auth'],
         security: [['bearerAuth' => []]],
         responses: [
-            new OA\Response(response: 200, description: 'Logout berhasil', content: new OA\JsonContent()),
-            new OA\Response(response: 401, description: 'Unauthorized', content: new OA\JsonContent()),
+            new OA\Response(response: 200, description: 'Logout berhasil', content: new OA\JsonContent),
+            new OA\Response(response: 401, description: 'Unauthorized', content: new OA\JsonContent),
         ]
     )]
     public function logout()
@@ -129,8 +128,8 @@ class AuthController extends Controller
         tags: ['Auth'],
         security: [['bearerAuth' => []]],
         responses: [
-            new OA\Response(response: 200, description: 'Token diperbarui', content: new OA\JsonContent()),
-            new OA\Response(response: 401, description: 'Token tidak valid', content: new OA\JsonContent()),
+            new OA\Response(response: 200, description: 'Token diperbarui', content: new OA\JsonContent),
+            new OA\Response(response: 401, description: 'Token tidak valid', content: new OA\JsonContent),
         ]
     )]
     public function refresh()
@@ -150,8 +149,8 @@ class AuthController extends Controller
         tags: ['Auth'],
         security: [['bearerAuth' => []]],
         responses: [
-            new OA\Response(response: 200, description: 'Berhasil', content: new OA\JsonContent()),
-            new OA\Response(response: 401, description: 'Unauthorized', content: new OA\JsonContent()),
+            new OA\Response(response: 200, description: 'Berhasil', content: new OA\JsonContent),
+            new OA\Response(response: 401, description: 'Unauthorized', content: new OA\JsonContent),
         ]
     )]
     public function me()
