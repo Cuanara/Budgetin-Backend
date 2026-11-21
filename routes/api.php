@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\TransactionController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('login', [AuthController::class, 'login']);
+Route::post('login-google', [AuthController::class, 'loginGoogle']);
 Route::post('register', [AuthController::class, 'register']);
 Route::post('refresh', [AuthController::class, 'refresh']);
 
