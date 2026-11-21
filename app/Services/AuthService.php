@@ -3,14 +3,18 @@
 namespace App\Services;
 
 use App\Exceptions\AuthException;
+use App\Models\User;
 use App\Repositories\Contracts\AuthRepositoryInterface;
+use Illuminate\Support\Facades\Auth;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
 
-class AuthService
+class AuthService extends BaseService
 {
     public function __construct(
         protected AuthRepositoryInterface $authRepository
-    ) {}
+    ) {
+        parent::__construct($authRepository);
+    }
 
     /**
      * Login user dan kembalikan data token.
@@ -18,19 +22,9 @@ class AuthService
      *
      * @throws AuthException Akun disuspend / email belum diverifikasi
      */
-    public function login(array $credentials): ?array
+    public function login(array $credentials): ?string
     {
-        $result = $this->authRepository->login($credentials);
-
-        return $result ?: null;
-    }
-
-    /**
-     * Registrasi user baru.
-     */
-    public function register(array $data)
-    {
-        return $this->authRepository->register($data);
+        return $this->authRepository->login($credentials);
     }
 
     /**
@@ -46,7 +40,7 @@ class AuthService
      *
      * @throws JWTException
      */
-    public function refreshToken(): array
+    public function refreshToken(): string
     {
         return $this->authRepository->refreshToken();
     }
@@ -54,8 +48,10 @@ class AuthService
     /**
      * Ambil data user yang sedang login.
      */
-    public function me()
+    public function me(): ?User
     {
-        return $this->authRepository->getAuthenticatedUser();
+        $id = Auth::guard('api')->id();
+
+        return $id === null ? null : $this->authRepository->find((string) $id);
     }
 }
