@@ -10,6 +10,7 @@ use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Resources\TokenResource;
 use App\Http\Resources\UserResource;
 use App\Services\AuthService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use OpenApi\Attributes as OA;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
@@ -44,7 +45,7 @@ class AuthController extends Controller
             new OA\Response(response: 422, description: 'Validasi gagal'),
         ]
     )]
-    public function login(LoginRequest $request)
+    public function login(LoginRequest $request): JsonResponse
     {
         try {
             $token = $this->authService->login($request->validated());
@@ -84,7 +85,7 @@ class AuthController extends Controller
             new OA\Response(response: 422, description: 'Validasi gagal'),
         ]
     )]
-    public function register(RegisterRequest $request)
+    public function register(RegisterRequest $request): JsonResponse
     {
         try {
             $user = $this->authService->create($request->validated());
@@ -107,7 +108,7 @@ class AuthController extends Controller
             new OA\Response(response: 401, description: 'Unauthenticated.'),
         ]
     )]
-    public function logout()
+    public function logout(): JsonResponse
     {
         if (! $this->authService->logout()) {
             return ResponseHelper::error('Gagal logout', 500);
@@ -126,7 +127,7 @@ class AuthController extends Controller
             new OA\Response(response: 401, description: 'Token tidak valid atau sudah tidak bisa di-refresh'),
         ]
     )]
-    public function refresh()
+    public function refresh(): JsonResponse
     {
         try {
             $token = $this->authService->refreshToken();
@@ -147,7 +148,7 @@ class AuthController extends Controller
             new OA\Response(response: 401, description: 'Unauthenticated.'),
         ]
     )]
-    public function me()
+    public function me(): JsonResponse
     {
         return ResponseHelper::success(
             new UserResource($this->authService->me()),

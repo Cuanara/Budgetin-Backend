@@ -8,6 +8,9 @@ use App\Repositories\Contracts\AuthRepositoryInterface;
 use Illuminate\Support\Facades\Auth;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
 
+/**
+ * @extends BaseService<User>
+ */
 class AuthService extends BaseService
 {
     public function __construct(
@@ -17,8 +20,10 @@ class AuthService extends BaseService
     }
 
     /**
-     * Login user dan kembalikan data token.
+     * Login user dan kembalikan token JWT.
      * Mengembalikan null jika email/password salah.
+     *
+     * @param  array<string, mixed>  $credentials
      *
      * @throws AuthException Akun disuspend / email belum diverifikasi
      */

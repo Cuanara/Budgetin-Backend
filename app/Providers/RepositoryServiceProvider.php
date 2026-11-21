@@ -13,6 +13,8 @@ class RepositoryServiceProvider extends ServiceProvider
     /**
      * Daftar binding interface => implementasi.
      * Tambahkan repository lain di sini.
+     *
+     * @var array<class-string, class-string>
      */
     public array $bindings = [
         AuthRepositoryInterface::class => AuthRepository::class,

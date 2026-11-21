@@ -10,6 +10,8 @@ return new class extends Migration
 {
     /**
      * Tabel yang punya user_id tapi memang TIDAK pakai foreign key.
+     *
+     * @var list<string>
      */
     private array $withoutForeignKey = ['sessions'];
 
@@ -136,6 +138,8 @@ return new class extends Migration
      * Cari semua kolom yang merujuk ke users.id, langsung dari database:
      * - kolom yang punya foreign key ke users.id
      * - kolom user_id yang foreign key-nya tidak ada (sessions, atau sisa run yang gagal)
+     *
+     * @return list<array{table: string, column: string, fk: array<string, mixed>|null}>
      */
     private function userReferences(): array
     {
@@ -243,6 +247,8 @@ return new class extends Migration
 
     /**
      * Index gabungan yang memuat kolom ini, misalnya unique(user_id, name).
+     *
+     * @return list<array<string, mixed>>
      */
     private function compositeIndexes(string $table, string $column): array
     {

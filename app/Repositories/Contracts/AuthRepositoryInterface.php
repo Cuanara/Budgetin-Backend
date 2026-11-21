@@ -2,8 +2,6 @@
 
 namespace App\Repositories\Contracts;
 
-use App\Models\User;
-
 interface AuthRepositoryInterface extends BaseRepositoryInterface
 {
     public function createOrUpdateGoogleUser(array $googleData);
