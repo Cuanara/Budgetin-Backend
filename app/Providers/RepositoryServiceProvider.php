@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Repositories\AuthRepository;
 use App\Repositories\Contracts\AuthRepositoryInterface;
+use App\Repositories\Contracts\TransactionRepositoryInterface;
+use App\Repositories\TransactionRepository;
 use Illuminate\Support\ServiceProvider;
 
 class RepositoryServiceProvider extends ServiceProvider
@@ -14,5 +16,6 @@ class RepositoryServiceProvider extends ServiceProvider
      */
     public array $bindings = [
         AuthRepositoryInterface::class => AuthRepository::class,
+        TransactionRepositoryInterface::class => TransactionRepository::class,
     ];
 }
