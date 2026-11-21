@@ -14,13 +14,6 @@ return new class extends Migration
     private array $withoutForeignKey = ['sessions'];
 
     /**
-     * Aturan ON DELETE untuk tabel yang foreign key-nya sudah hilang
-     * (misalnya karena migration sebelumnya gagal di tengah jalan).
-     * Ganti ke 'cascade' kalau migration aslinya memakai ->cascadeOnDelete().
-     */
-    private string $fallbackOnDelete = 'restrict';
-
-    /**
      * Run the migrations: users.id bigint -> uuid.
      */
     public function up(): void
@@ -108,8 +101,9 @@ return new class extends Migration
         Schema::table('users', fn (Blueprint $t) => $t->primary('id'));
 
         if (! $toUuid) {
-            // Jadikan auto increment lagi; MySQL otomatis melanjutkan dari MAX(id) + 1
-            Schema::table('users', fn (Blueprint $t) => $t->bigIncrements('id')->change());
+            // Khusus rollback: kembalikan skema awal (id angka berurutan).
+            // MySQL otomatis melanjutkan dari MAX(id) + 1.
+            Schema::table('users', fn (Blueprint $t) => $t->unsignedBigInteger('id')->autoIncrement()->change());
         }
 
         // 4. Tabel anak: ganti kolom, pasang lagi index & foreign key
@@ -130,12 +124,9 @@ return new class extends Migration
                         : $t->index($index['columns'], $index['name']);
                 }
 
+                // Sesuai SOP: relasi tanpa aturan ON DELETE / ON UPDATE
                 if ($ref['fk'] || ! in_array($table, $this->withoutForeignKey, true)) {
-                    $t->foreign($col)
-                        ->references('id')
-                        ->on('users')
-                        ->onUpdate($ref['fk']['on_update'] ?? 'no action')
-                        ->onDelete($ref['fk']['on_delete'] ?? $this->fallbackOnDelete);
+                    $t->foreign($col)->references('id')->on('users');
                 }
             });
         }
