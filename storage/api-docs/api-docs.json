@@ -53,7 +53,54 @@
                         "description": "Email atau password salah"
                     },
                     "403": {
-                        "description": "Akun disuspend/email belum diverifikasi"
+                        "description": "Email belum diverifikasi. Silakan cek email Anda"
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                }
+            }
+        },
+        "/api/login-google": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login Google user",
+                "operationId": "60001aed41acadda5583b41f47c06ac5",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "credential",
+                                    "device_name"
+                                ],
+                                "properties": {
+                                    "credential": {
+                                        "type": "string",
+                                        "example": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjFhMmIzYzRkNWU2ZiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhdWQiOiIxMjM0NTY3ODkwLWFiYy5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsInN1YiI6IjEwODc2NTQzMjEwOTg3NjU0MzIxMCIsImVtYWlsIjoiYnVkaUBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZX0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+                                    },
+                                    "device_name": {
+                                        "type": "string",
+                                        "example": "Chrome - Windows"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login berhasil"
+                    },
+                    "401": {
+                        "description": "Token Google tidak valid atau sudah kedaluwarsa"
+                    },
+                    "403": {
+                        "description": "Email akun Google belum terverifikasi"
                     },
                     "422": {
                         "description": "Validasi gagal"
