@@ -8,17 +8,11 @@ interface AuthRepositoryInterface extends BaseRepositoryInterface
 {
     public function createOrUpdateGoogleUser(array $googleData);
 
-    public function generateTokenForUser(User $user): ?array;
-
-    public function login(array $credentials): ?array;
-
-    public function register(array $data);
+    public function login(array $credentials): ?string;
 
     public function logout($request = null): bool;
 
-    public function refreshToken(): array;
-
-    public function getAuthenticatedUser(): array;
+    public function refreshToken(): string;
 
     public function findUserByEmail(string $email);
 

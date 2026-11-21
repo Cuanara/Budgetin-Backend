@@ -31,9 +31,9 @@ class LoginRequest extends FormRequest
     public function messages()
     {
         return [
-            'email.required' => 'Email Wajib Diisi',
-            'email.email' => 'Format Email Tidak Valid',
-            'password.required' => 'Password Wajib Diisi',
+            'email.required' => 'Email wajib diisi',
+            'email.email' => 'Format email tidak valid',
+            'password.required' => 'Password wajib Diisi',
         ];
     }
 }

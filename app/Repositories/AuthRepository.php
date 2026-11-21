@@ -38,7 +38,7 @@ class AuthRepository extends BaseRepository implements AuthRepositoryInterface
     /**
      * @throws AuthException jika akun disuspend / email belum diverifikasi
      */
-    public function login(array $credentials): ?array
+    public function login(array $credentials): ?string
     {
         $guard = $this->jwtGuard();
 
@@ -47,7 +47,6 @@ class AuthRepository extends BaseRepository implements AuthRepositoryInterface
             'password' => $credentials['password'],
         ];
 
-        // Cek email & password dulu TANPA membuat token
         if (! $guard->validate($credentials)) {
             return null;
         }
@@ -63,21 +62,7 @@ class AuthRepository extends BaseRepository implements AuthRepositoryInterface
             throw new AuthException('Email belum diverifikasi. Silakan cek email Anda.', 403);
         }
 
-        // Baru buat token setelah semua pengecekan lolos
-        $token = $guard->setTTL(self::TOKEN_TTL)->login($user);
-
-        return $this->formatTokenResponse($token);
-    }
-
-    public function register(array $data): User
-    {
-        $user = User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-        ]);
-
-        return $user;
+        return $guard->setTTL(self::TOKEN_TTL)->login($user);
     }
 
     public function logout($request = null): bool
@@ -91,21 +76,11 @@ class AuthRepository extends BaseRepository implements AuthRepositoryInterface
         }
     }
 
-    public function refreshToken(): array
+    public function refreshToken(): string
     {
         JWTAuth::factory()->setTTL(self::TOKEN_TTL);
-        $newToken = JWTAuth::parseToken()->refresh();
 
-        return $this->formatTokenResponse($newToken);
-    }
-
-    public function getAuthenticatedUser(): array
-    {
-        $user = User::find(Auth::guard('api')->id());
-
-        return [
-            'user' => $user,
-        ];
+        return JWTAuth::parseToken()->refresh();
     }
 
     public function findUserByEmail(string $email): ?User
@@ -116,16 +91,6 @@ class AuthRepository extends BaseRepository implements AuthRepositoryInterface
     public function updateActiveStatus(string $userId, bool $isActive)
     {
         return User::where('id', $userId)->update(['is_active' => $isActive]);
-    }
-
-    protected function formatTokenResponse(string $token): array
-    {
-        return [
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            // expires_in dalam detik (TTL JWT dalam menit)
-            'expires_in' => JWTAuth::factory()->getTTL() * 60,
-        ];
     }
 
     public function findResetToken(string $email)
@@ -234,17 +199,5 @@ class AuthRepository extends BaseRepository implements AuthRepositoryInterface
         }
 
         return $user->fresh(['departements', 'teams', 'roles']);
-    }
-
-    public function generateTokenForUser(User $user): ?array
-    {
-        JWTAuth::factory()->setTTL(self::TOKEN_TTL);
-        $token = JWTAuth::fromUser($user);
-
-        if (! $token) {
-            return null;
-        }
-
-        return $this->formatTokenResponse($token);
     }
 }
