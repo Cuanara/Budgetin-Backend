@@ -98,4 +98,17 @@ abstract class BaseRepository implements BaseRepositoryInterface
 
         return $model->delete();
     }
+
+    /**
+     * Cari satu data berdasarkan kolom tertentu.
+     *
+     * @return TModel|null
+     */
+    public function findBy(string $column, mixed $value): ?Model
+    {
+        return $this->model
+            ->newQuery()
+            ->where($column, $value)
+            ->first();
+    }
 }
