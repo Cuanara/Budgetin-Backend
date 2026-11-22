@@ -21,8 +21,6 @@ interface AuthRepositoryInterface extends BaseRepositoryInterface
      */
     public function loginEmail(array $credentials): ?string;
 
-    public function logout(): bool;
-
     public function refreshToken(): string;
 
     public function findByGoogleId(string $googleId): ?User;
