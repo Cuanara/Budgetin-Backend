@@ -53,7 +53,7 @@
                         "description": "Email atau password salah"
                     },
                     "403": {
-                        "description": "Email belum diverifikasi. Silakan cek email Anda"
+                        "description": "Email belum diverifikasi"
                     },
                     "422": {
                         "description": "Validasi gagal"
@@ -226,6 +226,116 @@
                     }
                 ]
             }
+        },
+        "/api/users/{id}": {
+            "delete": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Menghapus user",
+                "description": "Menghapus user berdasarkan ID.",
+                "operationId": "0b4133ed462528a5e648b88ead11e929",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID user yang akan dihapus",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "01a1fdd4-b997-73bf-b43b-5cafcd4279df"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil menghapus user",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Berhasil menghapus user"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Belum login / token tidak valid",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Akun tidak sesuai dengan yang login",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Akun tidak sesuai dengan yang login"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Terjadi kesalahan pada server",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Terjadi kesalahan pada server"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
@@ -240,6 +350,10 @@
         {
             "name": "Auth",
             "description": "Auth"
+        },
+        {
+            "name": "User",
+            "description": "User"
         }
     ]
 }

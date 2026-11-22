@@ -42,7 +42,7 @@ class AuthController extends Controller
                 description: 'Login berhasil'
             ),
             new OA\Response(response: 401, description: 'Email atau password salah'),
-            new OA\Response(response: 403, description: 'Email belum diverifikasi. Silakan cek email Anda'),
+            new OA\Response(response: 403, description: 'Email belum diverifikasi'),
             new OA\Response(response: 422, description: 'Validasi gagal'),
         ]
     )]

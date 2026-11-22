@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Exceptions\AuthException;
+use App\Helpers\AuthContextHelper;
 use App\Models\User;
 use App\Repositories\Contracts\AuthRepositoryInterface;
 use Illuminate\Support\Facades\Auth;
@@ -39,7 +40,13 @@ class AuthService extends BaseService
      */
     public function logout(): bool
     {
-        return $this->authRepository->logout();
+        try {
+            AuthContextHelper::userLogin()->logout();
+
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 
     /**
