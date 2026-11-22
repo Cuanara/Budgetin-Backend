@@ -3,15 +3,14 @@
 namespace App\Repositories;
 
 use App\Exceptions\AuthException;
+use App\Helpers\AuthContextHelper;
 use App\Models\User;
 use App\Repositories\Contracts\AuthRepositoryInterface;
 use Google\Client as GoogleClient;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
-use PHPOpenSourceSaver\JWTAuth\JWTGuard;
 
 /**
  * @extends BaseRepository<User>
@@ -26,22 +25,9 @@ class AuthRepository extends BaseRepository implements AuthRepositoryInterface
         return User::class;
     }
 
-    /**
-     * Guard 'api' memakai driver jwt, jadi aslinya berupa JWTGuard.
-     * Method ini membuat tipe tersebut eksplisit agar IDE mengenali
-     * method seperti setTTL() dan getLastAttempted().
-     */
-    protected function jwtGuard(): JWTGuard
-    {
-        /** @var JWTGuard $guard */
-        $guard = Auth::guard('api');
-
-        return $guard;
-    }
-
     public function loginWithUser(User $user): string
     {
-        return $this->jwtGuard()
+        return AuthContextHelper::userLogin()
             ->setTTL(self::TOKEN_TTL)
             ->login($user);
     }
@@ -53,7 +39,7 @@ class AuthRepository extends BaseRepository implements AuthRepositoryInterface
      */
     public function loginEmail(array $credentials): ?string
     {
-        $guard = $this->jwtGuard();
+        $guard = AuthContextHelper::userLogin();
 
         $credentials = [
             'email' => $credentials['email'],
@@ -68,21 +54,10 @@ class AuthRepository extends BaseRepository implements AuthRepositoryInterface
         $user = $guard->getLastAttempted();
 
         if (is_null($user->email_verified_at)) {
-            throw new AuthException('Email belum diverifikasi. Silakan cek email Anda', 403);
+            throw new AuthException('Email belum diverifikasi', 403);
         }
 
         return $this->loginWithUser($user);
-    }
-
-    public function logout(): bool
-    {
-        try {
-            $this->jwtGuard()->logout();
-
-            return true;
-        } catch (\Exception $e) {
-            return false;
-        }
     }
 
     public function refreshToken(): string
