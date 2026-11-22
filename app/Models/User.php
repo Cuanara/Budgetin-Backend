@@ -31,7 +31,7 @@ use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
  * @property bool $notification_wishlist
  * @property bool $notification_saving
  * @property Carbon|null $email_verified_at
- * @property string|null $password  null untuk user yang daftar via Google
+ * @property string|null $password null untuk user yang daftar via Google
  * @property string|null $two_factor_secret
  * @property string|null $two_factor_recovery_codes
  * @property Carbon|null $two_factor_confirmed_at
