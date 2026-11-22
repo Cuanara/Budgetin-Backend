@@ -31,7 +31,7 @@ class UserService extends BaseService
 
         AuthContextHelper::userLogin()->logout();
 
-        return parent::delete($id);
+        return $this->userRepository->delete($id);
     }
 
     /**
