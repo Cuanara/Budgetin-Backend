@@ -6,9 +6,6 @@ use App\Exceptions\AuthException;
 use App\Helpers\AuthContextHelper;
 use App\Models\User;
 use App\Repositories\Contracts\UserRepositoryInterface;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
-use RuntimeException;
 
 /**
  * @extends BaseService<User>
