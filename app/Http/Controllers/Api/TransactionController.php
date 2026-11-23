@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exceptions\TransactionException;
 use App\Helpers\AuthContextHelper;
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
@@ -30,14 +31,16 @@ class TransactionController extends Controller
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
-                required: ['category_id', 'wallet_id', 'type', 'amount', 'transaction_date'],
+                required: ['category_id', 'type', 'amount', 'transaction_date'],
                 properties: [
                     new OA\Property(property: 'category_id', type: 'string', format: 'uuid', example: '0ba7394a-e4a7-11f1-9344-7cfa802770cb'),
-                    new OA\Property(property: 'wallet_id', type: 'string', format: 'uuid', example: '0ba7394a-e4a7-11f1-9344-7cfa802770cc'),
+                    new OA\Property(property: 'wallet_id', type: 'string', format: 'uuid', nullable: true, example: '0ba7394a-e4a7-11f1-9344-7cfa802770cc'),
+                    new OA\Property(property: 'savings_goal_id', type: 'string', format: 'uuid', nullable: true, example: '0ba7394a-e4a7-11f1-9344-7cfa802770cd'),
                     new OA\Property(property: 'type', type: 'string', enum: ['income', 'expense'], example: 'income'),
-                    new OA\Property(property: 'amount', type: 'number', format: 'float', example: 50000),
+                    new OA\Property(property: 'amount', type: 'number', format: 'float', example: 100000),
                     new OA\Property(property: 'transaction_date', type: 'string', format: 'date', example: '2026-11-20'),
-                    new OA\Property(property: 'description', type: 'string', nullable: true, example: 'Membeli makan siang'),
+                    new OA\Property(property: 'description', type: 'string', nullable: true, example: 'Makan / Bonus Januari'),
+                    new OA\Property(property: 'notes', type: 'string', nullable: true, example: 'Catatan tambahan'),
                 ]
             )
         ),
@@ -47,40 +50,50 @@ class TransactionController extends Controller
                 description: 'Transaksi berhasil disimpan',
                 content: new OA\JsonContent(
                     properties: [
+                        new OA\Property(property: 'status', type: 'string', example: 'success'),
+                        new OA\Property(property: 'message', type: 'string', example: 'Transaksi berhasil disimpan.'),
                         new OA\Property(
                             property: 'data',
                             type: 'object',
                             properties: [
                                 new OA\Property(property: 'id', type: 'string', example: '01a1f7a2-cf56-71b0-acd3-c747f1420c7d'),
                                 new OA\Property(property: 'category_id', type: 'string', example: '0ba7394a-e4a7-11f1-9344-7cfa802770cb'),
+                                new OA\Property(property: 'wallet_id', type: 'string', example: '0ba7394a-e4a7-11f1-9344-7cfa802770cc'),
                                 new OA\Property(property: 'type', type: 'string', example: 'income'),
-                                new OA\Property(property: 'amount', type: 'number', example: 50000),
-                                new OA\Property(property: 'description', type: 'string', nullable: true, example: 'Membeli makan siang'),
+                                new OA\Property(property: 'amount', type: 'number', example: 100000),
+                                new OA\Property(property: 'description', type: 'string', nullable: true, example: 'Makan / Bonus Januari'),
                                 new OA\Property(property: 'transaction_date', type: 'string', example: '2026-11-20'),
                                 new OA\Property(property: 'created_at', type: 'string', example: '2026-11-20T06:26:44.000000Z'),
                                 new OA\Property(property: 'updated_at', type: 'string', example: '2026-11-20T06:26:44.000000Z'),
                             ]
                         ),
-                        new OA\Property(property: 'message', type: 'string', example: 'Transaksi berhasil disimpan.'),
                     ]
                 )
             ),
             new OA\Response(response: 401, description: 'Unauthenticated', content: new OA\JsonContent()),
-            new OA\Response(response: 422, description: 'Validasi gagal', content: new OA\JsonContent()),
+            new OA\Response(response: 422, description: 'Validasi gagal atau saldo tidak mencukupi', content: new OA\JsonContent()),
+            new OA\Response(response: 500, description: 'Terjadi kesalahan pada server', content: new OA\JsonContent()),
         ]
     )]
-    public function store(StoreTransactionRequest $request)
+    public function store(StoreTransactionRequest $request): JsonResponse
     {
-        $transaction = $this->transactionService->createTransaction(
-            $request->validated()
-        );
+        try {
+            $transaction = $this->transactionService->createTransaction(
+                $request->validated()
+            );
 
-        return (new TransactionResource($transaction))
-            ->additional([
-                'message' => 'Transaksi berhasil disimpan.',
-            ])
-            ->response()
-            ->setStatusCode(201);
+            return ResponseHelper::success(
+                new TransactionResource($transaction),
+                'Transaksi berhasil disimpan.',
+                201
+            );
+        } catch (TransactionException $e) {
+            return ResponseHelper::error($e->getMessage(), $e->getStatusCode());
+        } catch (\Throwable $e) {
+            Log::error('Error saat menyimpan transaksi: ' . $e->getMessage(), ['exception' => $e]);
+
+            return ResponseHelper::error('Terjadi kesalahan pada server', 500);
+        }
     }
 
     #[OA\Get(
