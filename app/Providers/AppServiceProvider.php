@@ -9,6 +9,10 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use App\Repositories\TransactionRepository;
 use App\Repositories\Contracts\TransactionRepositoryInterface;
+use App\Repositories\SavingsGoalRepository;
+use App\Repositories\SavingsDepositRepository;
+use App\Repositories\Contracts\SavingsGoalRepositoryInterface;
+use App\Repositories\Contracts\SavingsDepositRepositoryInterface;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,6 +24,14 @@ class AppServiceProvider extends ServiceProvider
          $this->app->bind(
             TransactionRepositoryInterface::class,
             TransactionRepository::class
+         );
+         $this->app->bind(
+            SavingsGoalRepositoryInterface::class,
+            SavingsGoalRepository::class
+         );
+         $this->app->bind(
+            SavingsDepositRepositoryInterface::class,
+            SavingsDepositRepository::class
          );
     }
 

@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\SavingsGoal;
 use App\Models\SavingsDeposit;
 use App\Repositories\Contracts\SavingsDepositRepositoryInterface;
+use App\Repositories\Contracts\SavingsGoalRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -13,72 +13,44 @@ use Illuminate\Validation\ValidationException;
 class SavingsDepositService
 {
     protected SavingsDepositRepositoryInterface $savingsDepositRepository;
+    protected SavingsGoalRepositoryInterface $savingsGoalRepository;
 
     public function __construct(
-        SavingsDepositRepositoryInterface $savingsDepositRepository
+        SavingsDepositRepositoryInterface $savingsDepositRepository,
+        SavingsGoalRepositoryInterface $savingsGoalRepository
     ) {
         $this->savingsDepositRepository = $savingsDepositRepository;
+        $this->savingsGoalRepository = $savingsGoalRepository;
     }
 
-    /**
-     * Mengambil seluruh deposit berdasarkan target tabungan.
-     */
     public function getAllBySavingsGoal(string $savingsGoalId): Collection
     {
-        $userId = (int) Auth::guard('api')->id();
-
-        $savingsGoal = $this->savingsDepositRepository
-            ->findSavingsGoalForUpdate($savingsGoalId, $userId);
+        $savingsGoal = $this->savingsGoalRepository->findByUser(
+            $savingsGoalId,
+            (int) Auth::guard('api')->id()
+        );
 
         return $this->savingsDepositRepository
             ->getAllBySavingsGoal($savingsGoal);
     }
 
-    /**
-     * Membuat deposit tabungan.
-     */
     public function create(
         string $savingsGoalId,
         array $data
     ): SavingsDeposit {
-        $userId = (int) Auth::guard('api')->id();
+        return DB::transaction(function () use ($savingsGoalId, $data) {
+            $userId = (int) Auth::guard('api')->id();
 
-        return DB::transaction(function () use (
-            $savingsGoalId,
-            $data,
-            $userId
-        ) {
-            // Mengambil dan mengunci target tabungan.
             $savingsGoal = $this->savingsDepositRepository
-                ->findSavingsGoalForUpdate(
-                    $savingsGoalId,
-                    $userId
-                );
+                ->findSavingsGoalForUpdate($savingsGoalId, $userId);
 
-            // Memastikan target masih aktif.
-            if ($savingsGoal->status === 'completed') {
+            if ($savingsGoal->status !== 'active') {
                 throw ValidationException::withMessages([
-                    'savings_goal' => 'Target tabungan sudah selesai.',
+                    'savings_goal' => 'Target tabungan tidak sedang aktif.',
                 ]);
             }
 
-            // Mengambil informasi wallet.
-            $walletId = (string) ($data['wallet_id'] ?? '');
-
-            if ($walletId === '') {
-                throw ValidationException::withMessages([
-                    'wallet_id' => 'Wallet wajib dipilih.',
-                ]);
-            }
-
-            $wallet = $this->savingsDepositRepository
-                ->findWalletForUpdate(
-                    $walletId,
-                    $userId
-                );
-
-            // Memastikan nominal deposit valid.
-            $amount = (float) ($data['amount'] ?? 0);
+            $amount = (float) $data['amount'];
 
             if ($amount <= 0) {
                 throw ValidationException::withMessages([
@@ -86,14 +58,6 @@ class SavingsDepositService
                 ]);
             }
 
-            // Memastikan saldo wallet mencukupi.
-            if ((float) $wallet->balance < $amount) {
-                throw ValidationException::withMessages([
-                    'amount' => 'Saldo wallet tidak mencukupi.',
-                ]);
-            }
-
-            // Memastikan deposit tidak melebihi target.
             $remainingAmount =
                 (float) $savingsGoal->target_amount
                 - (float) $savingsGoal->current_amount;
@@ -104,27 +68,14 @@ class SavingsDepositService
                 ]);
             }
 
-            // Menyiapkan data deposit.
-            unset($data['wallet_id']);
-
             $data['amount'] = $amount;
 
-            // Membuat data deposit.
             $deposit = $this->savingsDepositRepository
                 ->create($savingsGoal, $data);
 
-            // Mengurangi saldo wallet.
-            $this->savingsDepositRepository
-                ->deductWalletBalance($wallet, $amount);
-
-            // Menambahkan nominal tabungan.
             $updatedSavingsGoal = $this->savingsDepositRepository
-                ->increaseSavingsGoalAmount(
-                    $savingsGoal,
-                    $amount
-                );
+                ->increaseSavingsGoalAmount($savingsGoal, $amount);
 
-            // Menyelesaikan target jika sudah tercapai.
             if (
                 (float) $updatedSavingsGoal->current_amount
                 >= (float) $updatedSavingsGoal->target_amount

@@ -26,7 +26,6 @@ class StoreSavingsDepositRequest extends FormRequest
             'amount' => ['required', 'numeric', 'min:1'],
             'deposit_date'=> ['required', 'date'],
             'notes' =>['nullable', 'string', 'max:255'],
-            'wallet_id' => ['nullable', 'uuid', 'exists:wallets,id'],
         ];
     }
 
@@ -38,8 +37,6 @@ class StoreSavingsDepositRequest extends FormRequest
             'amount.min' => 'Nominal setoran minimal 1.',
             'deposit_date.required' => 'Tanggal setoran wajib diisi.',
             'deposit_date.date' => 'Format tanggal setoran tidak valid.',
-            'wallet_id.uuid' => 'Format wallet ID tidak valid.',
-            'wallet_id.exists' => 'Wallet tidak ditemukan.',
             'notes.max' => 'Catatan maksimal 255 karakter.',
         ];
     }
