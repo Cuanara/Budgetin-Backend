@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\AuthContextHelper;
+use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTransactionRequest;
 use App\Http\Resources\TransactionResource;
 use App\Services\TransactionService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use OpenApi\Attributes as OA;
 
 class TransactionController extends Controller
@@ -97,6 +101,8 @@ class TransactionController extends Controller
                 description: 'Daftar transaksi berhasil diambil',
                 content: new OA\JsonContent(
                     properties: [
+                        new OA\Property(property: 'status', type: 'string', example: 'success'),
+                        new OA\Property(property: 'message', type: 'string', example: 'Riwayat transaksi berhasil diambil'),
                         new OA\Property(
                             property: 'data',
                             type: 'array',
@@ -114,62 +120,39 @@ class TransactionController extends Controller
                                 ]
                             )
                         ),
-                        new OA\Property(
-                            property: 'links',
-                            type: 'object',
-                            properties: [
-                                new OA\Property(property: 'first', type: 'string', nullable: true),
-                                new OA\Property(property: 'last', type: 'string', nullable: true),
-                                new OA\Property(property: 'prev', type: 'string', nullable: true),
-                                new OA\Property(property: 'next', type: 'string', nullable: true),
-                            ]
-                        ),
-                        new OA\Property(
-                            property: 'meta',
-                            type: 'object',
-                            properties: [
-                                new OA\Property(property: 'current_page', type: 'integer', example: 1),
-                                new OA\Property(property: 'from', type: 'integer', example: 1),
-                                new OA\Property(property: 'last_page', type: 'integer', example: 1),
-                                new OA\Property(property: 'per_page', type: 'integer', example: 20),
-                                new OA\Property(property: 'to', type: 'integer', example: 10),
-                                new OA\Property(property: 'total', type: 'integer', example: 10),
-                            ]
-                        ),
-                        new OA\Property(property: 'message', type: 'string', example: 'Riwayat transaksi berhasil diambil.'),
                     ]
                 )
             ),
             new OA\Response(response: 401, description: 'Unauthenticated', content: new OA\JsonContent()),
+            new OA\Response(response: 500, description: 'Terjadi kesalahan pada server', content: new OA\JsonContent()),
         ]
     )]
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
-        $perPage = $request->query('per_page', 20);
-        $startDate = $request->query('start_date');
-        $endDate = $request->query('end_date');
-        $categoryId = $request->query('category_id');
+        try {
+            $perPage = (int) $request->query('per_page', 20);
+            $userId = AuthContextHelper::userLogin()->id();
 
-        $userId = auth()->guard('api')->id();
+            $filters = array_filter([
+                'start_date' => $request->query('start_date'),
+                'end_date' => $request->query('end_date'),
+                'category_id' => $request->query('category_id'),
+            ]);
 
-        if ($startDate || $endDate || $categoryId) {
             $transactions = $this->transactionService->getFilteredTransactions(
                 $userId,
-                $startDate,
-                $endDate,
-                $categoryId,
-                (int) $perPage
+                $filters,
+                $perPage
             );
-        } else {
-            $transactions = $this->transactionService->getUserTransactions(
-                $userId,
-                (int) $perPage
-            );
-        }
 
-        return TransactionResource::collection($transactions)
-            ->additional(['message' => 'Riwayat transaksi berhasil diambil.'])
-            ->response()
-            ->setStatusCode(200);
+            return ResponseHelper::success(
+                TransactionResource::collection($transactions),
+                'Riwayat transaksi berhasil diambil'
+            );
+        } catch (\Throwable $e) {
+            Log::error('Error saat mengambil riwayat transaksi: ' . $e->getMessage(), ['exception' => $e]);
+
+            return ResponseHelper::error('Terjadi kesalahan pada server', 500);
+        }
     }
 }
