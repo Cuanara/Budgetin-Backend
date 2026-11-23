@@ -2,7 +2,6 @@
 
 namespace App\Repositories;
 
-use App\Models\Wallet;
 use App\Models\SavingsGoal;
 use App\Models\SavingsDeposit;
 use App\Repositories\Contracts\SavingsDepositRepositoryInterface;
@@ -26,44 +25,29 @@ class SavingsDepositRepository implements SavingsDepositRepositoryInterface
             ->findOrFail($id);
     }
 
-    public function findWalletForUpdate(
-        string $walletId,
-        int $userId
-    ): Wallet {
-        return Wallet::where('user_id', $userId)
-            ->lockForUpdate()
-            ->findOrFail($walletId);
-    }
-
     public function create(
         SavingsGoal $savingsGoal,
         array $data
     ): SavingsDeposit {
         return $savingsGoal->deposits()->create($data);
     }
-    public function deductWalletBalance(
-    Wallet $wallet,
-    float $amount
-): void {
-    $wallet->decrement('balance', $amount);
-}
 
-public function increaseSavingsGoalAmount(
-    SavingsGoal $savingsGoal,
-    float $amount
-): SavingsGoal {
-    $savingsGoal->increment('current_amount', $amount);
+    public function increaseSavingsGoalAmount(
+        SavingsGoal $savingsGoal,
+        float $amount
+    ): SavingsGoal {
+        $savingsGoal->increment('current_amount', $amount);
 
-    return $savingsGoal->refresh();
-}
+        return $savingsGoal->refresh();
+    }
 
-public function completeSavingsGoal(
-    SavingsGoal $savingsGoal
-): SavingsGoal {
-    $savingsGoal->update([
-        'status' => 'completed',
-    ]);
+    public function completeSavingsGoal(
+        SavingsGoal $savingsGoal
+    ): SavingsGoal {
+        $savingsGoal->update([
+            'status' => 'completed',
+        ]);
 
-    return $savingsGoal->refresh();
-}
+        return $savingsGoal->refresh();
+    }
 }

@@ -26,6 +26,8 @@ class SavingsGoalService
     public function create(array $data): SavingsGoal
     {
         $data['user_id'] = Auth::guard('api')->id();
+        $data['current_amount'] = 0;
+        $data['status'] = 'active';
 
         return $this->savingsGoalRepository->create($data);
     }

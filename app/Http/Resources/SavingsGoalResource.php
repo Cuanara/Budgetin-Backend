@@ -5,17 +5,18 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class SavingsDepositResource extends JsonResource
+class SavingsGoalResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
         return [
             'id' => $this->id,
-            'savings_goal_id' => $this->savings_goal_id,
-            'wallet_id' => $this->wallet_id,
-            'amount' => $this->amount,
-            'deposit_date' => $this->deposit_date,
-            'notes' => $this->notes,
+            'user_id' => $this->user_id,
+            'name' => $this->name,
+            'target_amount' => $this->target_amount,
+            'current_amount' => $this->current_amount,
+            'target_date' => $this->target_date,
+            'status' => $this->status,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

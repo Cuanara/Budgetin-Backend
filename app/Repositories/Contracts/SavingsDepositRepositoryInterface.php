@@ -1,57 +1,31 @@
 <?php
 
-namespace App\Services;
+namespace App\Repositories\Contracts;
 
 use App\Models\SavingsGoal;
-use App\Repositories\Contracts\SavingsGoalRepositoryInterface;
-use Illuminate\Support\Facades\Auth;
+use App\Models\SavingsDeposit;
+use Illuminate\Database\Eloquent\Collection;
 
-class SavingsGoalService
+interface SavingsDepositRepositoryInterface
 {
-    protected SavingsGoalRepositoryInterface $savingsGoalRepository;
+    public function getAllBySavingsGoal(SavingsGoal $savingsGoal): Collection;
 
-    public function __construct(
-        SavingsGoalRepositoryInterface $savingsGoalRepository
-    ) {
-        $this->savingsGoalRepository = $savingsGoalRepository;
-    }
+    public function findSavingsGoalForUpdate(
+        string $id,
+        int $userId
+    ): SavingsGoal;
 
-    public function getAll()
-    {
-        return $this->savingsGoalRepository->getAllByUser(
-            (int) Auth::guard('api')->id()
-        );
-    }
+    public function create(
+        SavingsGoal $savingsGoal,
+        array $data
+    ): SavingsDeposit;
 
-    public function create(array $data): SavingsGoal
-    {
-        $data['user_id'] = Auth::guard('api')->id();
+    public function increaseSavingsGoalAmount(
+        SavingsGoal $savingsGoal,
+        float $amount
+    ): SavingsGoal;
 
-        return $this->savingsGoalRepository->create($data);
-    }
-
-    public function getById(string $id): SavingsGoal
-    {
-        return $this->savingsGoalRepository->findByUser(
-            $id,
-            (int) Auth::guard('api')->id()
-        );
-    }
-
-    public function update(string $id, array $data): SavingsGoal
-    {
-        $savingsGoal = $this->getById($id);
-
-        return $this->savingsGoalRepository->update(
-            $savingsGoal,
-            $data
-        );
-    }
-
-    public function delete(string $id): bool
-    {
-        $savingsGoal = $this->getById($id);
-
-        return $this->savingsGoalRepository->delete($savingsGoal);
-    }
+    public function completeSavingsGoal(
+        SavingsGoal $savingsGoal
+    ): SavingsGoal;
 }
