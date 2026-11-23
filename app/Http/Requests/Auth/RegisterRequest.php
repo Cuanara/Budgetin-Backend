@@ -52,4 +52,14 @@ class RegisterRequest extends FormRequest
             'password.numbers' => 'Password harus mengandung angka.',
         ];
     }
+
+    public function attributes(): array
+    {
+        return [
+            'name' => 'Nama',
+            'email' => 'Email',
+            'password' => 'Password',
+            'password_confirmation' => 'Konfirmasi password',
+        ];
+    }
 }

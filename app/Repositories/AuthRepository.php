@@ -3,15 +3,18 @@
 namespace App\Repositories;
 
 use App\Exceptions\AuthException;
+use App\Helpers\AuthContextHelper;
 use App\Models\User;
 use App\Repositories\Contracts\AuthRepositoryInterface;
-use Illuminate\Support\Facades\Auth;
+use Google\Client as GoogleClient;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
-use PHPOpenSourceSaver\JWTAuth\JWTGuard;
 
+/**
+ * @extends BaseRepository<User>
+ */
 class AuthRepository extends BaseRepository implements AuthRepositoryInterface
 {
     /** Masa berlaku token dalam menit. */
@@ -22,32 +25,27 @@ class AuthRepository extends BaseRepository implements AuthRepositoryInterface
         return User::class;
     }
 
-    /**
-     * Guard 'api' memakai driver jwt, jadi aslinya berupa JWTGuard.
-     * Method ini membuat tipe tersebut eksplisit agar IDE mengenali
-     * method seperti setTTL() dan getLastAttempted().
-     */
-    protected function jwtGuard(): JWTGuard
+    public function loginWithUser(User $user): string
     {
-        /** @var JWTGuard $guard */
-        $guard = Auth::guard('api');
-
-        return $guard;
+        return AuthContextHelper::userLogin()
+            ->setTTL(self::TOKEN_TTL)
+            ->login($user);
     }
 
     /**
+     * @param  array<string, mixed>  $credentials
+     *
      * @throws AuthException jika akun disuspend / email belum diverifikasi
      */
-    public function login(array $credentials): ?array
+    public function loginEmail(array $credentials): ?string
     {
-        $guard = $this->jwtGuard();
+        $guard = AuthContextHelper::userLogin();
 
         $credentials = [
             'email' => $credentials['email'],
             'password' => $credentials['password'],
         ];
 
-        // Cek email & password dulu TANPA membuat token
         if (! $guard->validate($credentials)) {
             return null;
         }
@@ -55,82 +53,26 @@ class AuthRepository extends BaseRepository implements AuthRepositoryInterface
         /** @var User $user */
         $user = $guard->getLastAttempted();
 
-        if ($user->is_suspended) {
-            throw new AuthException('Akun Anda telah disuspend.', 403);
-        }
-
         if (is_null($user->email_verified_at)) {
-            throw new AuthException('Email belum diverifikasi. Silakan cek email Anda.', 403);
+            throw new AuthException('Email belum diverifikasi', 403);
         }
 
-        // Baru buat token setelah semua pengecekan lolos
-        $token = $guard->setTTL(self::TOKEN_TTL)->login($user);
-
-        return $this->formatTokenResponse($token);
+        return $this->loginWithUser($user);
     }
 
-    public function register(array $data): User
-    {
-        $user = User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-        ]);
-
-        return $user;
-    }
-
-    public function logout($request = null): bool
-    {
-        try {
-            Auth::guard('api')->logout();
-
-            return true;
-        } catch (\Exception $e) {
-            return false;
-        }
-    }
-
-    public function refreshToken(): array
+    public function refreshToken(): string
     {
         JWTAuth::factory()->setTTL(self::TOKEN_TTL);
-        $newToken = JWTAuth::parseToken()->refresh();
 
-        return $this->formatTokenResponse($newToken);
+        return JWTAuth::parseToken()->refresh();
     }
 
-    public function getAuthenticatedUser(): array
-    {
-        $user = User::find(Auth::guard('api')->id());
-
-        return [
-            'user' => $user,
-        ];
-    }
-
-    public function findUserByEmail(string $email): ?User
-    {
-        return User::where('email', $email)->first();
-    }
-
-    public function updateActiveStatus(string $userId, bool $isActive)
+    /**
+     * @return int jumlah baris yang diperbarui
+     */
+    public function updateActiveStatus(string $userId, bool $isActive): int
     {
         return User::where('id', $userId)->update(['is_active' => $isActive]);
-    }
-
-    protected function formatTokenResponse(string $token): array
-    {
-        return [
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            // expires_in dalam detik (TTL JWT dalam menit)
-            'expires_in' => JWTAuth::factory()->getTTL() * 60,
-        ];
-    }
-
-    public function findResetToken(string $email)
-    {
-        return DB::table('password_reset_tokens')->where('email', $email)->first();
     }
 
     public function saveResetToken(string $email, string $hashedOtp): void
@@ -161,13 +103,6 @@ class AuthRepository extends BaseRepository implements AuthRepositoryInterface
             ]);
     }
 
-    public function findByVerifiedToken(string $verifiedToken)
-    {
-        return DB::table('password_reset_tokens')
-            ->where('token', $verifiedToken)
-            ->first();
-    }
-
     public function saveEmailVerificationOtp(string $email, string $hashedOtp): void
     {
         DB::table('email_verification_tokens')->updateOrInsert(
@@ -180,7 +115,10 @@ class AuthRepository extends BaseRepository implements AuthRepositoryInterface
         );
     }
 
-    public function findEmailVerificationOtp(string $email)
+    /**
+     * @return object|null baris email_verification_tokens (email, otp, expires_at, created_at)
+     */
+    public function findEmailVerificationOtp(string $email): ?object
     {
         return DB::table('email_verification_tokens')->where('email', $email)->first();
     }
@@ -195,56 +133,82 @@ class AuthRepository extends BaseRepository implements AuthRepositoryInterface
         User::where('id', $userId)->update(['email_verified_at' => now()]);
     }
 
-    public function createOrUpdateGoogleUser(array $googleData)
+    /**
+     * @return array<string, mixed>|null payload token jika valid, null jika tidak
+     */
+    public function verifyIdToken(string $idToken): ?array
     {
-        $user = User::withTrashed()->where('email', $googleData['email'])->first();
+        $allowedClientIds = config('services.google.client_ids', []);
 
-        if (! $user) {
-            $user = User::create([
-                'name' => $googleData['name'],
-                'email' => $googleData['email'],
-                'password' => Hash::make(Str::random(24)),
-                'avatar' => $googleData['picture'] ?? null,
-                'email_verified_at' => now(),
-                'is_active' => true,
-                'is_suspended' => false,
-            ]);
+        if (empty($allowedClientIds)) {
+            Log::error('GOOGLE_CLIENT_ID belum diisi di .env');
 
-            $user->assignRole('user');
-        } else {
-            if ($user->trashed()) {
-                $user->restore();
-            }
-
-            if (is_null($user->email_verified_at)) {
-                $user->email_verified_at = now();
-            }
-
-            if (empty($user->name) && isset($googleData['name'])) {
-                $user->name = $googleData['name'];
-            }
-
-            if (empty($user->avatar) && isset($googleData['picture'])) {
-                $user->avatar = $googleData['picture'];
-            }
-
-            $user->is_active = true;
-            $user->is_suspended = false;
-            $user->save();
-        }
-
-        return $user->fresh(['departements', 'teams', 'roles']);
-    }
-
-    public function generateTokenForUser(User $user): ?array
-    {
-        JWTAuth::factory()->setTTL(self::TOKEN_TTL);
-        $token = JWTAuth::fromUser($user);
-
-        if (! $token) {
             return null;
         }
 
-        return $this->formatTokenResponse($token);
+        try {
+            $client = new GoogleClient;
+            // Audience dicek manual di bawah supaya bisa menerima beberapa
+            // Client ID sekaligus (mis. Web + Android + iOS).
+            $payload = $client->verifyIdToken($idToken);
+        } catch (\Throwable $e) {
+            Log::warning('Verifikasi token Google gagal: '.$e->getMessage());
+
+            return null;
+        }
+
+        if (! is_array($payload)) {
+            return null;
+        }
+
+        // Token harus dibuat untuk aplikasi kita, bukan aplikasi lain.
+        if (! in_array($payload['aud'] ?? null, $allowedClientIds, true)) {
+            Log::warning('Audience token Google tidak cocok', ['aud' => $payload['aud'] ?? null]);
+
+            return null;
+        }
+
+        // Opsional: batasi login hanya untuk domain Google Workspace tertentu.
+        $hostedDomain = config('services.google.hosted_domain');
+        if ($hostedDomain && ($payload['hd'] ?? null) !== $hostedDomain) {
+            return null;
+        }
+
+        return $payload;
+    }
+
+    public function findByGoogleId(string $googleId): ?User
+    {
+        return $this->findBy('google_id', $googleId);
+    }
+
+    public function findByEmail(string $email): ?User
+    {
+        return $this->findBy('email', Str::lower($email));
+    }
+
+    /**
+     * Buat user baru dari data Google.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    public function createGoogleUser(array $attributes): User
+    {
+        $user = new User;
+        $user->forceFill($attributes)->save();
+
+        return $user;
+    }
+
+    /**
+     * Hubungkan atau perbarui data Google pada user yang sudah ada.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    public function updateGoogleData(User $user, array $attributes): User
+    {
+        $user->forceFill($attributes)->save();
+
+        return $user;
     }
 }

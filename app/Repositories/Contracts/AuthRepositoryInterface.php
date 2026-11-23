@@ -4,27 +4,40 @@ namespace App\Repositories\Contracts;
 
 use App\Models\User;
 
+/**
+ * @extends BaseRepositoryInterface<User>
+ */
 interface AuthRepositoryInterface extends BaseRepositoryInterface
 {
-    public function createOrUpdateGoogleUser(array $googleData);
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function verifyIdToken(string $idToken): ?array;
 
-    public function generateTokenForUser(User $user): ?array;
+    public function loginWithUser(User $user): string;
 
-    public function login(array $credentials): ?array;
+    /**
+     * @param  array<string, mixed>  $credentials
+     */
+    public function loginEmail(array $credentials): ?string;
 
-    public function register(array $data);
+    public function refreshToken(): string;
 
-    public function logout($request = null): bool;
+    public function findByGoogleId(string $googleId): ?User;
 
-    public function refreshToken(): array;
+    public function findByEmail(string $email): ?User;
 
-    public function getAuthenticatedUser(): array;
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
+    public function createGoogleUser(array $attributes): User;
 
-    public function findUserByEmail(string $email);
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
+    public function updateGoogleData(User $user, array $attributes): User;
 
-    public function updateActiveStatus(string $userId, bool $isActive);
-
-    public function findResetToken(string $email);
+    public function updateActiveStatus(string $userId, bool $isActive): int;
 
     public function saveResetToken(string $email, string $hashedOtp): void;
 
@@ -34,11 +47,9 @@ interface AuthRepositoryInterface extends BaseRepositoryInterface
 
     public function markTokenAsVerified(string $email, string $verifiedToken): void;
 
-    public function findByVerifiedToken(string $verifiedToken);
-
     public function saveEmailVerificationOtp(string $email, string $hashedOtp): void;
 
-    public function findEmailVerificationOtp(string $email);
+    public function findEmailVerificationOtp(string $email): ?object;
 
     public function deleteEmailVerificationOtp(string $email): void;
 

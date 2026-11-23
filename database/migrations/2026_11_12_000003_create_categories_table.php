@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('categories')) {
+        if (! Schema::hasTable('categories')) {
             Schema::create('categories', function (Blueprint $table) {
                 $table->uuid('id')->primary();
                 $table->foreignId('user_id')->nullable()->constrained('users');
@@ -32,4 +32,3 @@ return new class extends Migration
         Schema::dropIfExists('categories');
     }
 };
-

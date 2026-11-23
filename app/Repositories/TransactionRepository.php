@@ -12,14 +12,14 @@ class TransactionRepository implements TransactionRepositoryInterface
         return Transaction::create($data);
     }
 
-    public function paginateByUser(int $userId, int $perPage = 20)
+    public function paginateByUser(string $userId, int $perPage = 20)
     {
         return Transaction::where('user_id', $userId)
             ->orderByDesc('transaction_date')
             ->paginate($perPage);
     }
 
-    public function filterByUser(int $userId, ?string $startDate, ?string $endDate, ?int $categoryId, int $perPage = 20)
+    public function filterByUser(string $userId, ?string $startDate, ?string $endDate, ?string $categoryId, int $perPage = 20)
     {
         $query = Transaction::where('user_id', $userId);
         if ($startDate) {

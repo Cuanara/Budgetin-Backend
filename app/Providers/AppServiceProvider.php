@@ -7,8 +7,6 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
-use App\Repositories\TransactionRepository;
-use App\Repositories\Contracts\TransactionRepositoryInterface;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -17,10 +15,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-         $this->app->bind(
-            TransactionRepositoryInterface::class,
-            TransactionRepository::class
-         );
+        //
     }
 
     /**

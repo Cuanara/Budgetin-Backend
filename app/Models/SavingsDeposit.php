@@ -40,4 +40,3 @@ class SavingsDeposit extends Model
         return $this->belongsTo(Wallet::class);
     }
 }
-

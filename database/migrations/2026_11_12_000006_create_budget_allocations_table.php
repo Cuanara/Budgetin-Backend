@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('budget_allocations')) {
+        if (! Schema::hasTable('budget_allocations')) {
             Schema::create('budget_allocations', function (Blueprint $table) {
                 $table->uuid('id')->primary();
                 $table->foreignUuid('budget_id')->constrained('budgets');

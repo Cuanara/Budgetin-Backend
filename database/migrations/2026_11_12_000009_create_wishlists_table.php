@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('wishlists')) {
+        if (! Schema::hasTable('wishlists')) {
             Schema::create('wishlists', function (Blueprint $table) {
                 $table->uuid('id')->primary();
                 $table->foreignId('user_id')->constrained('users');
@@ -37,4 +37,3 @@ return new class extends Migration
         Schema::dropIfExists('wishlists');
     }
 };
-
