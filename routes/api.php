@@ -18,5 +18,5 @@ Route::middleware('auth:api')->group(function () {
     Route::apiResource('users', UserController::class)->only(['update', 'destroy']);
 
     // Transaction
-    Route::post('transactions', [TransactionController::class, 'store']);
+    Route::apiResource('transactions', TransactionController::class);
 });
