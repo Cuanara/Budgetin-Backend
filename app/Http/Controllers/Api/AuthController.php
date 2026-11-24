@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Exceptions\AuthException;
+use App\Helpers\RefreshTokenCookie;
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginGoogleRequest;
@@ -12,9 +13,9 @@ use App\Http\Resources\TokenResource;
 use App\Http\Resources\UserResource;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use OpenApi\Attributes as OA;
-use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
 
 class AuthController extends Controller
 {
@@ -33,6 +34,7 @@ class AuthController extends Controller
                 properties: [
                     new OA\Property(property: 'email', type: 'string', format: 'email', example: 'user@example.com'),
                     new OA\Property(property: 'password', type: 'string', format: 'password', example: 'password123'),
+                    new OA\Property(property: 'remember', type: 'boolean', example: true),
                 ]
             )
         ),
@@ -49,13 +51,21 @@ class AuthController extends Controller
     public function login(LoginRequest $request): JsonResponse
     {
         try {
-            $token = $this->authService->login($request->validated());
+            $tokens = $this->authService->login(
+                $request->credentials(),
+                $request->remember(),
+                $this->authService->clientMeta($request)
+            );
 
-            if (! $token) {
+            if ($tokens === null) {
                 return ResponseHelper::error('Email atau password salah', 401);
             }
 
-            return ResponseHelper::success(new TokenResource($token), 'Login berhasil');
+            return RefreshTokenCookie::attach(
+                $request,
+                ResponseHelper::success(new TokenResource($tokens), 'Login berhasil'),
+                $tokens
+            );
         } catch (AuthException $e) {
             return ResponseHelper::error($e->getMessage(), $e->getStatusCode());
         } catch (\Throwable $e) {
@@ -75,7 +85,7 @@ class AuthController extends Controller
                 required: ['credential', 'device_name'],
                 properties: [
                     new OA\Property(property: 'credential', type: 'string', example: 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjFhMmIzYzRkNWU2ZiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhdWQiOiIxMjM0NTY3ODkwLWFiYy5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsInN1YiI6IjEwODc2NTQzMjEwOTg3NjU0MzIxMCIsImVtYWlsIjoiYnVkaUBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZX0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'),
-                    new OA\Property(property: 'device_name', type: 'string', example: 'Chrome - Windows'),
+                    new OA\Property(property: 'remember', type: 'boolean', example: true),
                 ]
             )
         ),
@@ -92,13 +102,21 @@ class AuthController extends Controller
     public function loginGoogle(LoginGoogleRequest $request): JsonResponse
     {
         try {
-            $token = $this->authService->verifyIdTokenGoogle($request->validated());
+            $token = $this->authService->verifyIdTokenGoogle(
+                $request->credential(),
+                $request->remember(),
+                $this->authService->clientMeta($request)
+            );
 
             if (! $token) {
                 return ResponseHelper::error('Token Google tidak valid atau sudah kedaluwarsa', 401);
             }
 
-            return ResponseHelper::success(new TokenResource($token), 'Login Google berhasil');
+            return RefreshTokenCookie::attach(
+                $request,
+                ResponseHelper::success(new TokenResource($token), 'Login Google berhasil'),
+                $token
+            );
         } catch (AuthException $e) {
             return ResponseHelper::error($e->getMessage(), $e->getStatusCode());
         } catch (\Throwable $e) {
@@ -152,9 +170,9 @@ class AuthController extends Controller
             new OA\Response(response: 401, description: 'Unauthenticated.'),
         ]
     )]
-    public function logout(): JsonResponse
+    public function logout(Request $request): JsonResponse
     {
-        if (! $this->authService->logout()) {
+        if (! $this->authService->logout(RefreshTokenCookie::read($request))) {
             return ResponseHelper::error('Gagal logout', 500);
         }
 
@@ -165,20 +183,31 @@ class AuthController extends Controller
         path: '/api/refresh',
         summary: 'Refresh token JWT',
         tags: ['Auth'],
+        parameters: [
+            new OA\Parameter(name: 'X-Client-Platform', in: 'header', required: false, schema: new OA\Schema(type: 'string', enum: ['mobile'])),
+        ],
         security: [['bearerAuth' => []]],
         responses: [
             new OA\Response(response: 200, description: 'Token berhasil diperbarui'),
-            new OA\Response(response: 401, description: 'Token tidak valid atau sudah tidak bisa di-refresh'),
+            new OA\Response(response: 401, description: 'Sesi berakhir, silakan login kembali'),
         ]
     )]
-    public function refresh(): JsonResponse
+    public function refresh(Request $request): JsonResponse
     {
-        try {
-            $token = $this->authService->refreshToken();
+        $plainToken = RefreshTokenCookie::read($request);
 
-            return ResponseHelper::success(new TokenResource($token), 'Token berhasil diperbarui');
-        } catch (JWTException $e) {
-            return ResponseHelper::error('Token tidak valid atau sudah tidak bisa di-refresh', 401);
+        if ($plainToken === null) {
+            return ResponseHelper::error('Sesi berakhir, silakan login kembali', 401)
+                ->withCookie(RefreshTokenCookie::forget());
+        }
+
+        try {
+            $tokens = $this->authService->refreshToken($plainToken, $this->authService->clientMeta($request));
+
+            return ResponseHelper::success(new TokenResource($tokens), 'Token berhasil diperbarui');
+        } catch (AuthException $e) {
+            return ResponseHelper::error($e->getMessage(), $e->getCode() ?: 401)
+                ->withCookie(RefreshTokenCookie::forget());
         }
     }
 

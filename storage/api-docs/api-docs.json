@@ -38,6 +38,10 @@
                                         "type": "string",
                                         "format": "password",
                                         "example": "password123"
+                                    },
+                                    "remember": {
+                                        "type": "boolean",
+                                        "example": true
                                     }
                                 },
                                 "type": "object"
@@ -82,9 +86,9 @@
                                         "type": "string",
                                         "example": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjFhMmIzYzRkNWU2ZiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhdWQiOiIxMjM0NTY3ODkwLWFiYy5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsInN1YiI6IjEwODc2NTQzMjEwOTg3NjU0MzIxMCIsImVtYWlsIjoiYnVkaUBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZX0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
                                     },
-                                    "device_name": {
-                                        "type": "string",
-                                        "example": "Chrome - Windows"
+                                    "remember": {
+                                        "type": "boolean",
+                                        "example": true
                                     }
                                 },
                                 "type": "object"
@@ -190,12 +194,25 @@
                 ],
                 "summary": "Refresh token JWT",
                 "operationId": "f6409cd8d794404a6410b0767432b0f4",
+                "parameters": [
+                    {
+                        "name": "X-Client-Platform",
+                        "in": "header",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "mobile"
+                            ]
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Token berhasil diperbarui"
                     },
                     "401": {
-                        "description": "Token tidak valid atau sudah tidak bisa di-refresh"
+                        "description": "Sesi berakhir, silakan login kembali"
                     }
                 },
                 "security": [
@@ -284,6 +301,14 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Riwayat transaksi berhasil diambil"
+                                        },
                                         "data": {
                                             "type": "array",
                                             "items": {
@@ -324,60 +349,6 @@
                                                 },
                                                 "type": "object"
                                             }
-                                        },
-                                        "links": {
-                                            "properties": {
-                                                "first": {
-                                                    "type": "string",
-                                                    "nullable": true
-                                                },
-                                                "last": {
-                                                    "type": "string",
-                                                    "nullable": true
-                                                },
-                                                "prev": {
-                                                    "type": "string",
-                                                    "nullable": true
-                                                },
-                                                "next": {
-                                                    "type": "string",
-                                                    "nullable": true
-                                                }
-                                            },
-                                            "type": "object"
-                                        },
-                                        "meta": {
-                                            "properties": {
-                                                "current_page": {
-                                                    "type": "integer",
-                                                    "example": 1
-                                                },
-                                                "from": {
-                                                    "type": "integer",
-                                                    "example": 1
-                                                },
-                                                "last_page": {
-                                                    "type": "integer",
-                                                    "example": 1
-                                                },
-                                                "per_page": {
-                                                    "type": "integer",
-                                                    "example": 20
-                                                },
-                                                "to": {
-                                                    "type": "integer",
-                                                    "example": 10
-                                                },
-                                                "total": {
-                                                    "type": "integer",
-                                                    "example": 10
-                                                }
-                                            },
-                                            "type": "object"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Riwayat transaksi berhasil diambil."
                                         }
                                     },
                                     "type": "object"
@@ -387,6 +358,14 @@
                     },
                     "401": {
                         "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Terjadi kesalahan pada server",
                         "content": {
                             "application/json": {
                                 "schema": {}
