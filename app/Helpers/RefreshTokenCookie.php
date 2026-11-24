@@ -35,7 +35,7 @@ final class RefreshTokenCookie
             return $response;
         }
 
-        return $response->withCookie(Cookie::create(
+        return $response->withCookie(new Cookie(
             self::COOKIE_NAME,
             $tokens['refresh_token'],
             $tokens['refresh_expires_at'],
@@ -65,7 +65,7 @@ final class RefreshTokenCookie
 
     public static function make(string $token, \DateTimeInterface $expiresAt): Cookie
     {
-        return Cookie::create(
+        return new Cookie(
             self::COOKIE_NAME,
             $token,
             $expiresAt,
