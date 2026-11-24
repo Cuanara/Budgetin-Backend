@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\SavingsDeposit;
+use App\Models\Wallet;
 use App\Repositories\Contracts\SavingsDepositRepositoryInterface;
 use App\Repositories\Contracts\SavingsGoalRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
@@ -50,7 +51,18 @@ class SavingsDepositService
                 ]);
             }
 
-            $amount = (float) $data['amount'];
+            $wallet = Wallet::where('user_id', $userId)
+                ->lockForUpdate()
+                ->first();
+
+            if (!$wallet) {
+                throw ValidationException::withMessages([
+                    'wallet' => 'Wallet pengguna belum tersedia.',
+                ]);
+            }
+
+            $amount = (int) round((float) $data['amount'] * 100);
+            $balance = (int) round((float) $wallet->balance * 100);
 
             if ($amount <= 0) {
                 throw ValidationException::withMessages([
@@ -58,9 +70,12 @@ class SavingsDepositService
                 ]);
             }
 
-            $remainingAmount =
-                (float) $savingsGoal->target_amount
-                - (float) $savingsGoal->current_amount;
+            $remainingAmount = (int) round(
+                (
+                    (float) $savingsGoal->target_amount
+                    - (float) $savingsGoal->current_amount
+                ) * 100
+            );
 
             if ($amount > $remainingAmount) {
                 throw ValidationException::withMessages([
@@ -68,13 +83,32 @@ class SavingsDepositService
                 ]);
             }
 
-            $data['amount'] = $amount;
+            if ($balance < $amount) {
+                throw ValidationException::withMessages([
+                    'amount' => 'Saldo Wallet tidak mencukupi.',
+                ]);
+            }
+
+            $data['amount'] = number_format($amount / 100, 2, '.', '');
+            $data['wallet_id'] = $wallet->id;
 
             $deposit = $this->savingsDepositRepository
                 ->create($savingsGoal, $data);
 
+            $wallet->update([
+                'balance' => number_format(
+                    ($balance - $amount) / 100,
+                    2,
+                    '.',
+                    ''
+                ),
+            ]);
+
             $updatedSavingsGoal = $this->savingsDepositRepository
-                ->increaseSavingsGoalAmount($savingsGoal, $amount);
+                ->increaseSavingsGoalAmount(
+                    $savingsGoal,
+                    $amount / 100
+                );
 
             if (
                 (float) $updatedSavingsGoal->current_amount
