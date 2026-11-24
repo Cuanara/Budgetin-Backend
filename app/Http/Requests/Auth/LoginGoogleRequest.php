@@ -24,24 +24,44 @@ class LoginGoogleRequest extends FormRequest
     {
         return [
             'credential' => 'required|string',
-            'device_name' => 'required|string|max:255',
+            'remember' => 'sometimes|boolean',
         ];
     }
 
-    public function messages()
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
     {
         return [
             'required' => ':attribute wajib diisi',
             'string' => ':attribute harus berupa teks',
-            'max' => ':attribute maksimal :max karakter',
+            'boolean' => ':attribute harus berupa true atau false',
         ];
     }
 
+    /**
+     * @return array<string, string>
+     */
     public function attributes(): array
     {
         return [
-            'credential' => 'Kredensial',
-            'device_name' => 'Nama perangkat',
+            'credential' => 'Kredensial Google',
+            'remember' => 'Ingat saya',
         ];
+    }
+
+    public function credential(): string
+    {
+        return (string) $this->validated('credential');
+    }
+
+    /**
+     * Apakah user memilih "ingat saya".
+     * Default true: refresh token berlaku 30 hari, bukan 1 hari.
+     */
+    public function remember(): bool
+    {
+        return $this->boolean('remember', true);
     }
 }

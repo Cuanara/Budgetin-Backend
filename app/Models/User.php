@@ -128,6 +128,14 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail, Passk
     }
 
     /**
+     * @return HasMany<RefreshToken, $this>
+     */
+    public function refreshTokens()
+    {
+        return $this->hasMany(RefreshToken::class);
+    }
+
+    /**
      * ID yang disimpan di klaim "sub" token JWT (UUID user).
      */
     public function getJWTIdentifier(): mixed

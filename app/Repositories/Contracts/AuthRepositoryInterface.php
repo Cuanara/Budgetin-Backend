@@ -2,30 +2,35 @@
 
 namespace App\Repositories\Contracts;
 
+use App\Models\RefreshToken;
 use App\Models\User;
 
 /**
  * @extends BaseRepositoryInterface<User>
+ *
+ * @phpstan-import-type ClientMeta from \App\Services\AuthService
  */
 interface AuthRepositoryInterface extends BaseRepositoryInterface
 {
+    // Login
+
     /**
      * @return array<string, mixed>|null
      */
     public function verifyIdToken(string $idToken): ?array;
 
-    public function loginWithUser(User $user): string;
-
     /**
-     * @param  array<string, mixed>  $credentials
+     * @param  array{email: string, password: string}  $credentials
      */
-    public function loginEmail(array $credentials): ?string;
+    public function validateEmailCredentials(array $credentials): ?User;
 
-    public function refreshToken(): string;
+    public function loginWithUser(User $user): string;
 
     public function findByGoogleId(string $googleId): ?User;
 
     public function findByEmail(string $email): ?User;
+
+    // Register
 
     /**
      * @param  array<string, mixed>  $attributes
@@ -37,11 +42,24 @@ interface AuthRepositoryInterface extends BaseRepositoryInterface
      */
     public function updateGoogleData(User $user, array $attributes): User;
 
-    public function updateActiveStatus(string $userId, bool $isActive): int;
+    // Refresh Token
+    public function accessTokenTtl(): int;
 
-    public function saveResetToken(string $email, string $hashedOtp): void;
+    /**
+     * @param  ClientMeta  $meta
+     * @return array{string, RefreshToken}
+     */
+    public function createRefreshToken(User $user, bool $remember, array $meta = []): array;
 
-    public function deleteResetToken(string $email): void;
+    public function findRefreshTokenForUpdate(string $plainToken): ?RefreshToken;
+
+    public function revokeRefreshToken(RefreshToken $token): void;
+
+    public function revokeRefreshTokenByPlain(string $plainToken): void;
+
+    public function revokeAllRefreshTokens(string $userId): int;
+
+    public function invalidateAccessToken(): void;
 
     public function updateUserPassword(string $email, string $hashedPassword): void;
 
