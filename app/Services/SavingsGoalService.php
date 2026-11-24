@@ -19,7 +19,7 @@ class SavingsGoalService
     public function getAll()
     {
         return $this->savingsGoalRepository->getAllByUser(
-            (int) Auth::guard('api')->id()
+            (string) Auth::guard('api')->id()
         );
     }
 
@@ -36,7 +36,7 @@ class SavingsGoalService
     {
         return $this->savingsGoalRepository->findByUser(
             $id,
-            (int) Auth::guard('api')->id()
+            (string) Auth::guard('api')->id()
         );
     }
 

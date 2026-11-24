@@ -7,11 +7,11 @@ use Illuminate\Database\Eloquent\Collection;
 
 interface SavingsGoalRepositoryInterface
 {
-    public function getAllByUser(int $userId): Collection;
+    public function getAllByUser(string $userId): Collection;
 
     public function create(array $data): SavingsGoal;
 
-    public function findByUser(string $id, int $userId): SavingsGoal;
+    public function findByUser(string $id, string $userId): SavingsGoal;
 
     public function update(SavingsGoal $savingsGoal, array $data): SavingsGoal;
 

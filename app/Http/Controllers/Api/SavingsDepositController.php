@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreSavingsDepositRequest;
 use App\Http\Resources\SavingsDepositResource;
@@ -18,12 +19,14 @@ class SavingsDepositController extends Controller
 
     public function index(string $savingsGoalId)
     {
-        $deposits = $this->savingsDepositService->getAll($savingsGoalId);
+        $deposits = $this->savingsDepositService->getAllBySavingsGoal(
+            $savingsGoalId
+        );
 
-        return SavingsDepositResource::collection($deposits)
-            ->additional([
-                'message' => 'Riwayat setoran berhasil diambil.',
-            ]);
+        return ResponseHelper::success(
+            SavingsDepositResource::collection($deposits),
+            'Riwayat setoran berhasil diambil.'
+        );
     }
 
     public function store(
@@ -35,11 +38,10 @@ class SavingsDepositController extends Controller
             $request->validated()
         );
 
-        return (new SavingsDepositResource($deposit))
-            ->additional([
-                'message' => 'Setoran tabungan berhasil disimpan.',
-            ])
-            ->response()
-            ->setStatusCode(201);
+        return ResponseHelper::success(
+            new SavingsDepositResource($deposit),
+            'Setoran tabungan berhasil disimpan.',
+            201
+        );
     }
 }

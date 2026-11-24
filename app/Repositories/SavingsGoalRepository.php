@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Collection;
 
 class SavingsGoalRepository implements SavingsGoalRepositoryInterface
 {
-    public function getAllByUser(int $userId): Collection
+    public function getAllByUser(string $userId): Collection
     {
         return SavingsGoal::where('user_id', $userId)
             ->latest()
@@ -20,7 +20,7 @@ class SavingsGoalRepository implements SavingsGoalRepositoryInterface
         return SavingsGoal::create($data);
     }
 
-    public function findByUser(string $id, int $userId): SavingsGoal
+    public function findByUser(string $id, string $userId): SavingsGoal
     {
         return SavingsGoal::where('user_id', $userId)
             ->with('deposits')

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreSavingsGoalRequest;
 use App\Http\Resources\SavingsGoalResource;
@@ -20,10 +21,10 @@ class SavingsGoalController extends Controller
     {
         $savingsGoals = $this->savingsGoalService->getAll();
 
-        return SavingsGoalResource::collection($savingsGoals)
-            ->additional([
-                'message' => 'Data tabungan berhasil diambil.',
-            ]);
+        return ResponseHelper::success(
+            SavingsGoalResource::collection($savingsGoals),
+            'Data tabungan berhasil diambil.'
+        );
     }
 
     public function store(StoreSavingsGoalRequest $request)
@@ -32,22 +33,21 @@ class SavingsGoalController extends Controller
             $request->validated()
         );
 
-        return (new SavingsGoalResource($savingsGoal))
-            ->additional([
-                'message' => 'Tabungan berhasil dibuat.',
-            ])
-            ->response()
-            ->setStatusCode(201);
+        return ResponseHelper::success(
+            new SavingsGoalResource($savingsGoal),
+            'Tabungan berhasil dibuat.',
+            201
+        );
     }
 
     public function show(string $id)
     {
         $savingsGoal = $this->savingsGoalService->getById($id);
 
-        return (new SavingsGoalResource($savingsGoal))
-            ->additional([
-                'message' => 'Detail tabungan berhasil diambil.',
-            ]);
+        return ResponseHelper::success(
+            new SavingsGoalResource($savingsGoal),
+            'Detail tabungan berhasil diambil.'
+        );
     }
 
     public function update(StoreSavingsGoalRequest $request, string $id)
@@ -57,10 +57,10 @@ class SavingsGoalController extends Controller
             $request->validated()
         );
 
-        return (new SavingsGoalResource($savingsGoal))
-            ->additional([
-                'message' => 'Tabungan berhasil diperbarui.',
-            ]);
+        return ResponseHelper::success(
+            new SavingsGoalResource($savingsGoal),
+            'Tabungan berhasil diperbarui.'
+        );
     }
 
     public function destroy(string $id)

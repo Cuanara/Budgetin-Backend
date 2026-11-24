@@ -18,7 +18,7 @@ class SavingsDepositRepository implements SavingsDepositRepositoryInterface
 
     public function findSavingsGoalForUpdate(
         string $id,
-        int $userId
+        string $userId
     ): SavingsGoal {
         return SavingsGoal::where('user_id', $userId)
             ->lockForUpdate()
