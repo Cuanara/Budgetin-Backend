@@ -35,4 +35,13 @@ return [
         ],
     ],
 
+    'google' => [
+        // Bisa diisi beberapa Client ID, pisahkan dengan koma (Web, Android, iOS)
+        'client_ids' => array_values(array_filter(array_map(
+            'trim',
+            explode(',', (string) env('GOOGLE_CLIENT_ID', ''))
+        ))),
+        'hosted_domain' => env('GOOGLE_HOSTED_DOMAIN'),
+    ],
+
 ];
