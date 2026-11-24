@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreTransactionRequest extends FormRequest
@@ -12,11 +11,6 @@ class StoreTransactionRequest extends FormRequest
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
@@ -26,9 +20,14 @@ class StoreTransactionRequest extends FormRequest
                 'exists:categories,id',
             ],
             'wallet_id' => [
-                'required',
+                'nullable',
                 'uuid',
                 'exists:wallets,id',
+            ],
+            'savings_goal_id' => [
+                'nullable',
+                'uuid',
+                'exists:savings_goals,id',
             ],
             'type' => [
                 'required',
@@ -47,6 +46,10 @@ class StoreTransactionRequest extends FormRequest
                 'nullable',
                 'string',
             ],
+            'notes' => [
+                'nullable',
+                'string',
+            ],
         ];
     }
 
@@ -54,9 +57,9 @@ class StoreTransactionRequest extends FormRequest
     {
         return [
             'category_id.exists' => 'Kategori tidak ditemukan.',
-            'category_id.required' => 'Kategori wajib diisi',
+            'category_id.required' => 'Kategori wajib diisi.',
             'wallet_id.exists' => 'Dompet tidak ditemukan.',
-            'wallet_id.required' => 'Kategori tabungan wajib diisi',
+            'savings_goal_id.exists' => 'Target tabungan tidak ditemukan.',
             'type.required' => 'Jenis transaksi wajib diisi.',
             'type.in' => 'Jenis transaksi harus income atau expense.',
             'amount.required' => 'Jumlah transaksi wajib diisi.',
@@ -65,6 +68,7 @@ class StoreTransactionRequest extends FormRequest
             'transaction_date.required' => 'Tanggal transaksi wajib diisi.',
             'transaction_date.date' => 'Format tanggal transaksi tidak valid.',
             'description.string' => 'Deskripsi harus berupa teks.',
+            'notes.string' => 'Catatan harus berupa teks.',
         ];
     }
 }
