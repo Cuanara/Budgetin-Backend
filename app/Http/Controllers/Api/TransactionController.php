@@ -65,8 +65,8 @@ class TransactionController extends Controller
                     ]
                 )
             ),
-            new OA\Response(response: 401, description: 'Unauthenticated', content: new OA\JsonContent()),
-            new OA\Response(response: 422, description: 'Validasi gagal', content: new OA\JsonContent()),
+            new OA\Response(response: 401, description: 'Unauthenticated', content: new OA\JsonContent),
+            new OA\Response(response: 422, description: 'Validasi gagal', content: new OA\JsonContent),
         ]
     )]
     public function store(StoreTransactionRequest $request)
@@ -123,8 +123,8 @@ class TransactionController extends Controller
                     ]
                 )
             ),
-            new OA\Response(response: 401, description: 'Unauthenticated', content: new OA\JsonContent()),
-            new OA\Response(response: 500, description: 'Terjadi kesalahan pada server', content: new OA\JsonContent()),
+            new OA\Response(response: 401, description: 'Unauthenticated', content: new OA\JsonContent),
+            new OA\Response(response: 500, description: 'Terjadi kesalahan pada server', content: new OA\JsonContent),
         ]
     )]
     public function index(Request $request): JsonResponse
@@ -150,7 +150,7 @@ class TransactionController extends Controller
                 'Riwayat transaksi berhasil diambil'
             );
         } catch (\Throwable $e) {
-            Log::error('Error saat mengambil riwayat transaksi: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Error saat mengambil riwayat transaksi: '.$e->getMessage(), ['exception' => $e]);
 
             return ResponseHelper::error('Terjadi kesalahan pada server', 500);
         }

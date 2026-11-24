@@ -26,23 +26,23 @@ class TransactionRepository extends BaseRepository implements TransactionReposit
     {
         $query = $this->model->newQuery()->where('user_id', $userId);
 
-        if (!empty($filters['start_date'])) {
+        if (! empty($filters['start_date'])) {
             $query->whereDate('transaction_date', '>=', $filters['start_date']);
         }
 
-        if (!empty($filters['end_date'])) {
+        if (! empty($filters['end_date'])) {
             $query->whereDate('transaction_date', '<=', $filters['end_date']);
         }
 
-        if (!empty($filters['category_id'])) {
+        if (! empty($filters['category_id'])) {
             $query->where('category_id', $filters['category_id']);
         }
 
-        if (!empty($filters['wallet_id'])) {
+        if (! empty($filters['wallet_id'])) {
             $query->where('wallet_id', $filters['wallet_id']);
         }
 
-        if (!empty($filters['type'])) {
+        if (! empty($filters['type'])) {
             $query->where('type', $filters['type']);
         }
 
