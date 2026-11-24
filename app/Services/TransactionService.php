@@ -6,20 +6,19 @@ use App\Helpers\AuthContextHelper;
 use App\Models\Transaction;
 use App\Repositories\Contracts\TransactionRepositoryInterface;
 
-class TransactionService
+class TransactionService extends BaseService
 {
-    protected TransactionRepositoryInterface $transactionRepository;
-
-    public function __construct(TransactionRepositoryInterface $transactionRepository)
-    {
-        $this->transactionRepository = $transactionRepository;
+    public function __construct(
+        protected TransactionRepositoryInterface $transactionRepository
+    ) {
+        parent::__construct($transactionRepository);
     }
 
     public function createTransaction(array $data): Transaction
     {
-        $data['user_id'] = AuthContextHelper::userLogin()->id();
+        $userId = AuthContextHelper::userLogin()->id();
 
-        return $this->transactionRepository->create($data);
+        return $this->transactionRepository->createWithWalletAndSavings($data, $userId);
     }
 
     public function getUserTransactions(string $userId, array $filters = [], int $perPage = 20)
