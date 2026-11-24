@@ -11,17 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('refresh_tokens', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->foreignUuid('user_id')->constrained();
-            $table->string('token_hash', 64)->unique();
-            $table->boolean('remember')->default(false);
-            $table->string('user_agent')->nullable();
-            $table->string('ip_address', 45)->nullable();
-            $table->timestamp('expires_at');
-            $table->timestamp('revoked_at')->nullable();
-            $table->timestamps();
-        });
+        if (! Schema::hasTable('refresh_tokens')) {
+            Schema::create('refresh_tokens', function (Blueprint $table) {
+                $table->uuid('id')->primary();
+                $table->foreignUuid('user_id')->constrained();
+                $table->string('token_hash', 64)->unique();
+                $table->boolean('remember')->default(false);
+                $table->string('user_agent')->nullable();
+                $table->string('ip_address', 45)->nullable();
+                $table->timestamp('expires_at');
+                $table->timestamp('revoked_at')->nullable();
+                $table->timestamps();
+                $table->softDeletes();
+            });
+        }
     }
 
     /**
@@ -29,6 +32,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('refresh_tokens');
+        if (! Schema::hasTable('refresh_tokens')) {
+            Schema::dropIfExists('refresh_tokens');
+        }
     }
 };
