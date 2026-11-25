@@ -227,6 +227,403 @@
                 ]
             }
         },
+        "/api/budgets": {
+            "get": {
+                "tags": [
+                    "Budget"
+                ],
+                "summary": "Ambil data budget dan alokasi bulan ini",
+                "description": "Mengembalikan data budget bulan berjalan, total pemasukan (100% saldo main wallet), alokasi kategori, persentase diagram, dan nominal terpakai.",
+                "operationId": "7f0a8c11e5e12dff6b645dbd70697122",
+                "responses": {
+                    "200": {
+                        "description": "Data budget berhasil diambil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data budget berhasil diambil"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "example": "01a1f7a2-cf56-71b0-acd3-c747f1420c7d"
+                                                },
+                                                "month": {
+                                                    "type": "integer",
+                                                    "example": 11
+                                                },
+                                                "year": {
+                                                    "type": "integer",
+                                                    "example": 2026
+                                                },
+                                                "pemasukan": {
+                                                    "type": "number",
+                                                    "example": 3000000
+                                                },
+                                                "total_income": {
+                                                    "type": "number",
+                                                    "example": 3000000
+                                                },
+                                                "total_allocated_percentage": {
+                                                    "type": "number",
+                                                    "example": 100
+                                                },
+                                                "available_percentage": {
+                                                    "type": "number",
+                                                    "example": 0
+                                                },
+                                                "total_allocated_amount": {
+                                                    "type": "number",
+                                                    "example": 3000000
+                                                },
+                                                "total_spent_amount": {
+                                                    "type": "number",
+                                                    "example": 380000
+                                                },
+                                                "allocations": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "string",
+                                                                "example": "01a1f7a2-cf56-71b0-acd3-c747f1420c7e"
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "example": "Makan"
+                                                            },
+                                                            "percentage": {
+                                                                "type": "number",
+                                                                "example": 40
+                                                            },
+                                                            "allocated_amount": {
+                                                                "type": "number",
+                                                                "example": 1200000
+                                                            },
+                                                            "spent_amount": {
+                                                                "type": "number",
+                                                                "example": 380000
+                                                            },
+                                                            "remaining_amount": {
+                                                                "type": "number",
+                                                                "example": 820000
+                                                            },
+                                                            "percentage_used": {
+                                                                "type": "number",
+                                                                "example": 31.7
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Terjadi kesalahan pada server",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/budgets/allocations": {
+            "post": {
+                "tags": [
+                    "Budget"
+                ],
+                "summary": "Tambah kategori ke alokasi budget bulan ini",
+                "description": "Menambahkan kategori budget bulan berjalan. Jika total alokasi > 100%, sistem akan memotong jatah dari source_category_id / source_allocation_id yang dipilih.",
+                "operationId": "34980b49e0c03cc7c44c2a4de3ebe33c",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "percentage"
+                                ],
+                                "properties": {
+                                    "category_id": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "example": "0ba7394a-e4a7-11f1-9344-7cfa802770cb",
+                                        "nullable": true
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Hiburan",
+                                        "nullable": true
+                                    },
+                                    "percentage": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 10
+                                    },
+                                    "source_category_id": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "example": "0ba7394a-e4a7-11f1-9344-7cfa802770cc",
+                                        "nullable": true
+                                    },
+                                    "source_allocation_id": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Kategori budget berhasil ditambahkan",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validasi gagal atau alokasi melebihi 100%",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Terjadi kesalahan pada server",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/budgets/allocations/{id}": {
+            "delete": {
+                "tags": [
+                    "Budget"
+                ],
+                "summary": "Hapus alokasi kategori budget",
+                "operationId": "c101a4bf51373d41f556bc3fc4e66d36",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID alokasi budget",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Alokasi kategori budget berhasil dihapus",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Data tidak ditemukan",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Terjadi kesalahan pada server",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/budgets/rollover/check": {
+            "get": {
+                "tags": [
+                    "Budget"
+                ],
+                "summary": "Cek sisa saldo budget bulan sebelumnya untuk notifikasi rollover",
+                "operationId": "f63fba7f129c3f751b2ff97db92aad2c",
+                "responses": {
+                    "200": {
+                        "description": "Hasil pengecekan sisa saldo budget bulan lalu",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Terjadi kesalahan pada server",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/budgets/rollover": {
+            "post": {
+                "tags": [
+                    "Budget"
+                ],
+                "summary": "Eksekusi rollover sisa budget bulan lalu ke tabungan atau budget bulan ini",
+                "operationId": "869b533d6d72f0bb3910362be15b97dc",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "action"
+                                ],
+                                "properties": {
+                                    "action": {
+                                        "type": "string",
+                                        "example": "savings",
+                                        "enum": [
+                                            "savings",
+                                            "next_month"
+                                        ]
+                                    },
+                                    "savings_goal_id": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Rollover sisa budget berhasil diproses",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Tidak ada sisa budget atau validasi gagal",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Terjadi kesalahan pada server",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/transactions": {
             "get": {
                 "tags": [
@@ -284,6 +681,14 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Riwayat transaksi berhasil diambil"
+                                        },
                                         "data": {
                                             "type": "array",
                                             "items": {
@@ -324,60 +729,6 @@
                                                 },
                                                 "type": "object"
                                             }
-                                        },
-                                        "links": {
-                                            "properties": {
-                                                "first": {
-                                                    "type": "string",
-                                                    "nullable": true
-                                                },
-                                                "last": {
-                                                    "type": "string",
-                                                    "nullable": true
-                                                },
-                                                "prev": {
-                                                    "type": "string",
-                                                    "nullable": true
-                                                },
-                                                "next": {
-                                                    "type": "string",
-                                                    "nullable": true
-                                                }
-                                            },
-                                            "type": "object"
-                                        },
-                                        "meta": {
-                                            "properties": {
-                                                "current_page": {
-                                                    "type": "integer",
-                                                    "example": 1
-                                                },
-                                                "from": {
-                                                    "type": "integer",
-                                                    "example": 1
-                                                },
-                                                "last_page": {
-                                                    "type": "integer",
-                                                    "example": 1
-                                                },
-                                                "per_page": {
-                                                    "type": "integer",
-                                                    "example": 20
-                                                },
-                                                "to": {
-                                                    "type": "integer",
-                                                    "example": 10
-                                                },
-                                                "total": {
-                                                    "type": "integer",
-                                                    "example": 10
-                                                }
-                                            },
-                                            "type": "object"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Riwayat transaksi berhasil diambil."
                                         }
                                     },
                                     "type": "object"
@@ -387,6 +738,14 @@
                     },
                     "401": {
                         "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Terjadi kesalahan pada server",
                         "content": {
                             "application/json": {
                                 "schema": {}
@@ -413,7 +772,6 @@
                             "schema": {
                                 "required": [
                                     "category_id",
-                                    "wallet_id",
                                     "type",
                                     "amount",
                                     "transaction_date"
@@ -427,7 +785,14 @@
                                     "wallet_id": {
                                         "type": "string",
                                         "format": "uuid",
-                                        "example": "0ba7394a-e4a7-11f1-9344-7cfa802770cc"
+                                        "example": "0ba7394a-e4a7-11f1-9344-7cfa802770cc",
+                                        "nullable": true
+                                    },
+                                    "savings_goal_id": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "example": "0ba7394a-e4a7-11f1-9344-7cfa802770cd",
+                                        "nullable": true
                                     },
                                     "type": {
                                         "type": "string",
@@ -440,7 +805,7 @@
                                     "amount": {
                                         "type": "number",
                                         "format": "float",
-                                        "example": 50000
+                                        "example": 100000
                                     },
                                     "transaction_date": {
                                         "type": "string",
@@ -449,7 +814,12 @@
                                     },
                                     "description": {
                                         "type": "string",
-                                        "example": "Membeli makan siang",
+                                        "example": "Makan / Bonus Januari",
+                                        "nullable": true
+                                    },
+                                    "notes": {
+                                        "type": "string",
+                                        "example": "Catatan tambahan",
                                         "nullable": true
                                     }
                                 },
@@ -465,6 +835,14 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Transaksi berhasil disimpan."
+                                        },
                                         "data": {
                                             "properties": {
                                                 "id": {
@@ -475,17 +853,21 @@
                                                     "type": "string",
                                                     "example": "0ba7394a-e4a7-11f1-9344-7cfa802770cb"
                                                 },
+                                                "wallet_id": {
+                                                    "type": "string",
+                                                    "example": "0ba7394a-e4a7-11f1-9344-7cfa802770cc"
+                                                },
                                                 "type": {
                                                     "type": "string",
                                                     "example": "income"
                                                 },
                                                 "amount": {
                                                     "type": "number",
-                                                    "example": 50000
+                                                    "example": 100000
                                                 },
                                                 "description": {
                                                     "type": "string",
-                                                    "example": "Membeli makan siang",
+                                                    "example": "Makan / Bonus Januari",
                                                     "nullable": true
                                                 },
                                                 "transaction_date": {
@@ -502,10 +884,6 @@
                                                 }
                                             },
                                             "type": "object"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Transaksi berhasil disimpan."
                                         }
                                     },
                                     "type": "object"
@@ -522,7 +900,15 @@
                         }
                     },
                     "422": {
-                        "description": "Validasi gagal",
+                        "description": "Validasi gagal atau saldo tidak mencukupi",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Terjadi kesalahan pada server",
                         "content": {
                             "application/json": {
                                 "schema": {}
@@ -660,6 +1046,10 @@
         {
             "name": "Auth",
             "description": "Auth"
+        },
+        {
+            "name": "Budget",
+            "description": "Budget"
         },
         {
             "name": "Transactions",
