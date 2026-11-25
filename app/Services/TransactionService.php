@@ -2,24 +2,32 @@
 
 namespace App\Services;
 
+use App\Helpers\AuthContextHelper;
 use App\Models\Transaction;
 use App\Repositories\Contracts\TransactionRepositoryInterface;
-use Illuminate\Support\Facades\Auth;
 
-class TransactionService
+class TransactionService extends BaseService
 {
-    protected TransactionRepositoryInterface $transactionRepository;
-
     public function __construct(
-        TransactionRepositoryInterface $transactionRepository
+        protected TransactionRepositoryInterface $transactionRepository
     ) {
-        $this->transactionRepository = $transactionRepository;
+        parent::__construct($transactionRepository);
     }
 
     public function createTransaction(array $data): Transaction
     {
-       $data['user_id'] = Auth::guard('api')->id();
+        $userId = AuthContextHelper::userLogin()->id();
 
-        return $this->transactionRepository->create($data);
+        return $this->transactionRepository->createWithWalletAndSavings($data, $userId);
+    }
+
+    public function getUserTransactions(string $userId, array $filters = [], int $perPage = 20)
+    {
+        return $this->transactionRepository->filterByUser($userId, $filters, $perPage);
+    }
+
+    public function getFilteredTransactions(string $userId, array $filters = [], int $perPage = 20)
+    {
+        return $this->transactionRepository->filterByUser($userId, $filters, $perPage);
     }
 }

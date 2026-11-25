@@ -2,43 +2,72 @@
 
 namespace App\Repositories\Contracts;
 
+use App\Models\RefreshToken;
 use App\Models\User;
 
+/**
+ * @extends BaseRepositoryInterface<User>
+ *
+ * @phpstan-import-type ClientMeta from \App\Services\AuthService
+ */
 interface AuthRepositoryInterface extends BaseRepositoryInterface
 {
-    public function createOrUpdateGoogleUser(array $googleData);
+    // Login
 
-    public function generateTokenForUser(User $user): ?array;
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function verifyIdToken(string $idToken): ?array;
 
-    public function login(array $credentials): ?array;
+    /**
+     * @param  array{email: string, password: string}  $credentials
+     */
+    public function validateEmailCredentials(array $credentials): ?User;
 
-    public function register(array $data);
+    public function loginWithUser(User $user): string;
 
-    public function logout($request = null): bool;
+    public function findByGoogleId(string $googleId): ?User;
 
-    public function refreshToken(): array;
+    public function findByEmail(string $email): ?User;
 
-    public function getAuthenticatedUser(): array;
+    // Register
 
-    public function findUserByEmail(string $email);
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
+    public function createGoogleUser(array $attributes): User;
 
-    public function updateActiveStatus(string $userId, bool $isActive);
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
+    public function updateGoogleData(User $user, array $attributes): User;
 
-    public function findResetToken(string $email);
+    // Refresh Token
+    public function accessTokenTtl(): int;
 
-    public function saveResetToken(string $email, string $hashedOtp): void;
+    /**
+     * @param  ClientMeta  $meta
+     * @return array{string, RefreshToken}
+     */
+    public function createRefreshToken(User $user, bool $remember, array $meta = []): array;
 
-    public function deleteResetToken(string $email): void;
+    public function findRefreshTokenForUpdate(string $plainToken): ?RefreshToken;
+
+    public function revokeRefreshToken(RefreshToken $token): void;
+
+    public function revokeRefreshTokenByPlain(string $plainToken): void;
+
+    public function revokeAllRefreshTokens(string $userId): int;
+
+    public function invalidateAccessToken(): void;
 
     public function updateUserPassword(string $email, string $hashedPassword): void;
 
     public function markTokenAsVerified(string $email, string $verifiedToken): void;
 
-    public function findByVerifiedToken(string $verifiedToken);
-
     public function saveEmailVerificationOtp(string $email, string $hashedOtp): void;
 
-    public function findEmailVerificationOtp(string $email);
+    public function findEmailVerificationOtp(string $email): ?object;
 
     public function deleteEmailVerificationOtp(string $email): void;
 

@@ -18,7 +18,7 @@ class SavingsDepositController extends Controller
 
     public function index(string $savingsGoalId)
     {
-        $deposits = $this->savingsDepositService->getAll($savingsGoalId);
+        $deposits = $this->savingsDepositService->getAllBySavingsGoal($savingsGoalId);
 
         return SavingsDepositResource::collection($deposits)
             ->additional([

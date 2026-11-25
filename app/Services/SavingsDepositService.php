@@ -27,7 +27,7 @@ class SavingsDepositService
     {
         $savingsGoal = $this->savingsGoalRepository->findByUser(
             $savingsGoalId,
-            (int) Auth::guard('api')->id()
+            (string) Auth::guard('api')->id()
         );
 
         return $this->savingsDepositRepository
@@ -39,7 +39,7 @@ class SavingsDepositService
         array $data
     ): SavingsDeposit {
         return DB::transaction(function () use ($savingsGoalId, $data) {
-            $userId = (int) Auth::guard('api')->id();
+            $userId = (string) Auth::guard('api')->id();
 
             $savingsGoal = $this->savingsDepositRepository
                 ->findSavingsGoalForUpdate($savingsGoalId, $userId);

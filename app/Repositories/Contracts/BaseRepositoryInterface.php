@@ -32,6 +32,9 @@ interface BaseRepositoryInterface
      */
     public function findOrFail(string $id): Model;
 
+    /** @return TModel|null */
+    public function findBy(string $column, mixed $value): ?Model;
+
     /**
      * @param  array<string, mixed>  $data
      * @return TModel

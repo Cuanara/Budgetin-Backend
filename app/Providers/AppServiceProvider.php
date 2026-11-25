@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+
 use App\Repositories\TransactionRepository;
 use App\Repositories\Contracts\TransactionRepositoryInterface;
 use App\Repositories\SavingsGoalRepository;
@@ -21,18 +22,20 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-         $this->app->bind(
+        $this->app->bind(
             TransactionRepositoryInterface::class,
             TransactionRepository::class
-         );
-         $this->app->bind(
+        );
+
+        $this->app->bind(
             SavingsGoalRepositoryInterface::class,
             SavingsGoalRepository::class
-         );
-         $this->app->bind(
+        );
+
+        $this->app->bind(
             SavingsDepositRepositoryInterface::class,
             SavingsDepositRepository::class
-         );
+        );
     }
 
     /**

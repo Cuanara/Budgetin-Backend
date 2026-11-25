@@ -2,15 +2,16 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class SavingsGoal extends Model
 {
-    use HasUuids, SoftDeletes;
+    use HasFactory, HasUuids, SoftDeletes;
 
     protected $table = 'savings_goals';
 
@@ -23,11 +24,14 @@ class SavingsGoal extends Model
         'status',
     ];
 
-    protected $casts = [
-        'target_amount' => 'decimal:2',
-        'current_amount' => 'decimal:2',
-        'target_date' => 'date',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'target_amount' => 'decimal:2',
+            'current_amount' => 'decimal:2',
+            'target_date' => 'date',
+        ];
+    }
 
     public function user(): BelongsTo
     {
@@ -37,5 +41,10 @@ class SavingsGoal extends Model
     public function deposits(): HasMany
     {
         return $this->hasMany(SavingsDeposit::class, 'savings_goal_id');
+    }
+
+    public function wishlists(): HasMany
+    {
+        return $this->hasMany(Wishlist::class);
     }
 }

@@ -2,58 +2,232 @@
 
 namespace App\Services;
 
+use App\Exceptions\AuthException;
+use App\Models\User;
 use App\Repositories\Contracts\AuthRepositoryInterface;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
-class AuthService
+/**
+ * @extends BaseService<User>
+ *
+ * @phpstan-type TokenPair array{
+ *     access_token: string,
+ *     token_type: string,
+ *     expires_in: int,
+ *     refresh_token: string,
+ *     refresh_expires_at: Carbon
+ * }
+ * @phpstan-type ClientMeta array{user_agent?: string|null, ip_address?: string|null}
+ */
+class AuthService extends BaseService
 {
+    /**
+     * Jika refresh token yang baru saja dirotasi dipakai lagi dalam rentang ini
+     * (detik), anggap sebagai request bersamaan (mis. dua tab), bukan pencurian.
+     */
+    private const REUSE_GRACE_SECONDS = 10;
+
     public function __construct(
         protected AuthRepositoryInterface $authRepository
-    ) {}
+    ) {
+        parent::__construct($authRepository);
+    }
 
     /**
-     * Login user dan kembalikan data token.
+     * Login dengan email + password.
      * Mengembalikan null jika email/password salah.
      *
-     * @throws \App\Exceptions\AuthException  Akun disuspend / email belum diverifikasi
-     */
-    public function login(array $credentials): ?array
-    {
-        $result = $this->authRepository->login($credentials);
-
-        return $result ?: null;
-    }
-
-    /**
-     * Registrasi user baru.
-     */
-    public function register(array $data)
-    {
-        return $this->authRepository->register($data);
-    }
-
-    /**
-     * Logout user (invalidate token).
-     */
-    public function logout(): bool
-    {
-        return (bool) $this->authRepository->logout();
-    }
-
-    /**
-     * Refresh token JWT.
+     * @param  array{email: string, password: string}  $credentials
+     * @param  ClientMeta  $meta
+     * @return TokenPair|null
      *
-     * @throws \PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException
+     * @throws AuthException Akun disuspend / email belum diverifikasi
      */
-    public function refreshToken(): array
+    public function login(array $credentials, bool $remember = true, array $meta = []): ?array
     {
-        return $this->authRepository->refreshToken();
+        $user = $this->authRepository->validateEmailCredentials($credentials);
+
+        if ($user === null) {
+            return null;
+        }
+
+        return $this->issueTokens($user, $remember, $meta);
+    }
+
+    /**
+     * Login dengan Google: verifikasi ID token ("credential") dari front end,
+     * cari/buat user, lalu kembalikan pasangan token aplikasi.
+     *
+     * @param  ClientMeta  $meta
+     * @return TokenPair
+     *
+     * @throws AuthException 401 token tidak valid, 403 email belum diverifikasi / akun disuspend
+     */
+    public function verifyIdTokenGoogle(string $credential, bool $remember = true, array $meta = []): ?array
+    {
+        $payload = $this->authRepository->verifyIdToken($credential);
+
+        if ($payload === null) {
+            throw new AuthException('Token Google tidak valid atau sudah kedaluwarsa', 401);
+        }
+
+        if (empty($payload['email']) || ! filter_var($payload['email_verified'] ?? false, FILTER_VALIDATE_BOOLEAN)) {
+            throw new AuthException('Email akun Google belum terverifikasi', 403);
+        }
+
+        $user = $this->findOrCreateUser($payload);
+
+        return $this->issueTokens($user, $remember, $meta);
+    }
+
+    /**
+     * Logout dari perangkat ini: cabut refresh token dan batalkan access token.
+     */
+    public function logout(?string $plainRefreshToken = null): bool
+    {
+        if ($plainRefreshToken !== null && $plainRefreshToken !== '') {
+            $this->authRepository->revokeRefreshTokenByPlain($plainRefreshToken);
+        }
+
+        $this->authRepository->invalidateAccessToken();
+
+        return true;
+    }
+
+    /**
+     * Tukar refresh token dengan pasangan token baru (rotation).
+     * Refresh token lama langsung tidak berlaku.
+     *
+     * @param  ClientMeta  $meta
+     * @return TokenPair
+     *
+     * @throws AuthException 401 sesi tidak valid/berakhir, 403 akun disuspend
+     */
+    public function refreshToken(string $plainRefreshToken, array $meta = []): array
+    {
+        // Status dikembalikan dari transaction (bukan langsung throw di dalamnya)
+        // supaya pencabutan token karena reuse/suspend tetap tersimpan.
+        [$status, $tokens] = DB::transaction(function () use ($plainRefreshToken, $meta): array {
+            $record = $this->authRepository->findRefreshTokenForUpdate($plainRefreshToken);
+
+            if ($record === null) {
+                return ['invalid', null];
+            }
+
+            if ($record->revoked_at !== null) {
+                // Token lama dipakai lagi setelah masa jeda: kemungkinan besar dicuri.
+                // Cabut semua sesi user ini supaya pencuri ikut ter-logout.
+                if ($record->revoked_at->lt(now()->subSeconds(self::REUSE_GRACE_SECONDS))) {
+                    $this->authRepository->revokeAllRefreshTokens((string) $record->user_id);
+
+                    return ['reused', null];
+                }
+
+                return ['invalid', null];
+            }
+
+            if ($record->expires_at->isPast()) {
+                return ['expired', null];
+            }
+
+            $user = $record->user;
+
+            if ($user === null) {
+                $this->authRepository->revokeAllRefreshTokens((string) $record->user_id);
+
+                return ['inactive', null];
+            }
+
+            // Rotation: token lama dicabut, token baru diterbitkan.
+            $this->authRepository->revokeRefreshToken($record);
+
+            return ['ok', $this->issueTokens($user, $record->remember, $meta)];
+        });
+
+        return match ($status) {
+            'ok' => $tokens,
+            'inactive' => throw new AuthException('Akun Anda dinonaktifkan', 403),
+            default => throw new AuthException('Sesi berakhir, silakan login kembali', 401),
+        };
     }
 
     /**
      * Ambil data user yang sedang login.
      */
-    public function me()
+    public function me(): ?User
     {
-        return $this->authRepository->getAuthenticatedUser();
+        $id = Auth::guard('api')->id();
+
+        return $id === null ? null : $this->authRepository->find((string) $id);
+    }
+
+    /**
+     * Cari user berdasarkan google_id atau email; buat baru jika belum ada.
+     *
+     * @param  array<string, mixed>  $payload  payload ID token Google yang sudah terverifikasi
+     */
+    private function findOrCreateUser(array $payload): User
+    {
+        return DB::transaction(function () use ($payload): User {
+            $googleId = (string) $payload['sub'];
+            $email = Str::lower((string) $payload['email']);
+
+            $user = $this->authRepository->findByGoogleId($googleId)
+                ?? $this->authRepository->findByEmail($email);
+
+            if ($user) {
+                // Hubungkan akun lama (daftar via email) dengan akun Google.
+                return $this->authRepository->updateGoogleData($user, [
+                    'google_id' => $googleId,
+                    'avatar' => $payload['picture'] ?? $user->avatar,
+                    'email_verified_at' => $user->email_verified_at ?? now(),
+                ]);
+            }
+
+            return $this->authRepository->createGoogleUser([
+                'name' => $payload['name'] ?? Str::before($email, '@'),
+                'email' => $email,
+                'google_id' => $googleId,
+                'avatar' => $payload['picture'] ?? null,
+                'password' => null, // login hanya via Google
+                'email_verified_at' => now(),
+            ]);
+        });
+    }
+
+    /**
+     * Terbitkan access token (JWT) + refresh token untuk user.
+     *
+     * @param  ClientMeta  $meta
+     * @return TokenPair
+     */
+    private function issueTokens(User $user, bool $remember, array $meta): array
+    {
+        $accessToken = $this->authRepository->loginWithUser($user);
+
+        [$refreshToken, $record] = $this->authRepository->createRefreshToken($user, $remember, $meta);
+
+        return [
+            'access_token' => $accessToken,
+            'token_type' => 'bearer',
+            'expires_in' => $this->authRepository->accessTokenTtl() * 60,
+            'refresh_token' => $refreshToken,
+            'refresh_expires_at' => $record->expires_at,
+        ];
+    }
+
+    /**
+     * @return array{user_agent: string|null, ip_address: string|null}
+     */
+    public function clientMeta(Request $request): array
+    {
+        return [
+            'user_agent' => $request->userAgent(),
+            'ip_address' => $request->ip(),
+        ];
     }
 }

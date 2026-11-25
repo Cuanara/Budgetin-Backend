@@ -38,6 +38,10 @@
                                         "type": "string",
                                         "format": "password",
                                         "example": "password123"
+                                    },
+                                    "remember": {
+                                        "type": "boolean",
+                                        "example": true
                                     }
                                 },
                                 "type": "object"
@@ -47,52 +51,63 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Login berhasil",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "access_token": {
-                                            "type": "string",
-                                            "example": "eyJ0eXAiOiJKV1QiLCJhbGciOi..."
-                                        },
-                                        "token_type": {
-                                            "type": "string",
-                                            "example": "bearer"
-                                        },
-                                        "expires_in": {
-                                            "type": "integer",
-                                            "example": 3600
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "description": "Login berhasil"
                     },
                     "401": {
-                        "description": "Email atau password salah",
-                        "content": {
-                            "application/json": {
-                                "schema": {}
-                            }
-                        }
+                        "description": "Email atau password salah"
                     },
                     "403": {
-                        "description": "Akun disuspend / email belum diverifikasi",
-                        "content": {
-                            "application/json": {
-                                "schema": {}
-                            }
-                        }
+                        "description": "Email belum diverifikasi"
                     },
                     "422": {
-                        "description": "Validasi gagal",
-                        "content": {
-                            "application/json": {
-                                "schema": {}
+                        "description": "Validasi gagal"
+                    }
+                }
+            }
+        },
+        "/api/login-google": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login Google user",
+                "operationId": "60001aed41acadda5583b41f47c06ac5",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "credential",
+                                    "device_name"
+                                ],
+                                "properties": {
+                                    "credential": {
+                                        "type": "string",
+                                        "example": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjFhMmIzYzRkNWU2ZiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhdWQiOiIxMjM0NTY3ODkwLWFiYy5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsInN1YiI6IjEwODc2NTQzMjEwOTg3NjU0MzIxMCIsImVtYWlsIjoiYnVkaUBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZX0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+                                    },
+                                    "remember": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
                             }
                         }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login berhasil"
+                    },
+                    "401": {
+                        "description": "Token Google tidak valid atau sudah kedaluwarsa"
+                    },
+                    "403": {
+                        "description": "Email akun Google belum terverifikasi"
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
                     }
                 }
             }
@@ -122,7 +137,7 @@
                                     "email": {
                                         "type": "string",
                                         "format": "email",
-                                        "example": "budi@example.com"
+                                        "example": "user@example.com"
                                     },
                                     "password": {
                                         "type": "string",
@@ -142,20 +157,10 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Registrasi berhasil",
-                        "content": {
-                            "application/json": {
-                                "schema": {}
-                            }
-                        }
+                        "description": "Registrasi berhasil"
                     },
                     "422": {
-                        "description": "Validasi gagal",
-                        "content": {
-                            "application/json": {
-                                "schema": {}
-                            }
-                        }
+                        "description": "Validasi gagal"
                     }
                 }
             }
@@ -169,20 +174,10 @@
                 "operationId": "ad65cbbd4e9f201619eae184a5961a98",
                 "responses": {
                     "200": {
-                        "description": "Logout berhasil",
-                        "content": {
-                            "application/json": {
-                                "schema": {}
-                            }
-                        }
+                        "description": "Logout berhasil"
                     },
                     "401": {
-                        "description": "Unauthorized",
-                        "content": {
-                            "application/json": {
-                                "schema": {}
-                            }
-                        }
+                        "description": "Unauthenticated."
                     }
                 },
                 "security": [
@@ -199,22 +194,25 @@
                 ],
                 "summary": "Refresh token JWT",
                 "operationId": "f6409cd8d794404a6410b0767432b0f4",
+                "parameters": [
+                    {
+                        "name": "X-Client-Platform",
+                        "in": "header",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "mobile"
+                            ]
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Token diperbarui",
-                        "content": {
-                            "application/json": {
-                                "schema": {}
-                            }
-                        }
+                        "description": "Token berhasil diperbarui"
                     },
                     "401": {
-                        "description": "Token tidak valid",
-                        "content": {
-                            "application/json": {
-                                "schema": {}
-                            }
-                        }
+                        "description": "Sesi berakhir, silakan login kembali"
                     }
                 },
                 "security": [
@@ -233,18 +231,390 @@
                 "operationId": "8367feff40ba10e43187792cad3132c1",
                 "responses": {
                     "200": {
-                        "description": "Berhasil",
+                        "description": "Data user berhasil diambil"
+                    },
+                    "401": {
+                        "description": "Unauthenticated."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/transactions": {
+            "get": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Daftar riwayat transaksi",
+                "description": "Mengembalikan daftar transaksi milik user yang terautentikasi. Dapat difilter dengan per_page, start_date, end_date, category_id.",
+                "operationId": "9b50e29e364179ebde24ac5fc59cd442",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Jumlah item per halaman (default 20)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "start_date",
+                        "in": "query",
+                        "description": "Tanggal mulai (YYYY-MM-DD)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "end_date",
+                        "in": "query",
+                        "description": "Tanggal akhir (YYYY-MM-DD)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "category_id",
+                        "in": "query",
+                        "description": "ID kategori transaksi",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Daftar transaksi berhasil diambil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Riwayat transaksi berhasil diambil"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string",
+                                                        "example": "01a1f7a2-cf56-71b0-acd3-c747f1420c7d"
+                                                    },
+                                                    "category_id": {
+                                                        "type": "string",
+                                                        "example": "0ba7394a-e4a7-11f1-9344-7cfa802770cb"
+                                                    },
+                                                    "type": {
+                                                        "type": "string",
+                                                        "example": "income"
+                                                    },
+                                                    "amount": {
+                                                        "type": "number",
+                                                        "example": 50000
+                                                    },
+                                                    "description": {
+                                                        "type": "string",
+                                                        "example": "Membeli makan siang",
+                                                        "nullable": true
+                                                    },
+                                                    "transaction_date": {
+                                                        "type": "string",
+                                                        "example": "2026-11-20"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "example": "2026-11-20T06:26:44.000000Z"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "example": "2026-11-20T06:26:44.000000Z"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
                         "content": {
                             "application/json": {
                                 "schema": {}
                             }
                         }
                     },
-                    "401": {
-                        "description": "Unauthorized",
+                    "500": {
+                        "description": "Terjadi kesalahan pada server",
                         "content": {
                             "application/json": {
                                 "schema": {}
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Simpan transaksi baru",
+                "operationId": "54eaa3952808f639d46f969f4c8b98c5",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "category_id",
+                                    "wallet_id",
+                                    "type",
+                                    "amount",
+                                    "transaction_date"
+                                ],
+                                "properties": {
+                                    "category_id": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "example": "0ba7394a-e4a7-11f1-9344-7cfa802770cb"
+                                    },
+                                    "wallet_id": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "example": "0ba7394a-e4a7-11f1-9344-7cfa802770cc"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "example": "income",
+                                        "enum": [
+                                            "income",
+                                            "expense"
+                                        ]
+                                    },
+                                    "amount": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 50000
+                                    },
+                                    "transaction_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-11-20"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Membeli makan siang",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Transaksi berhasil disimpan",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "example": "01a1f7a2-cf56-71b0-acd3-c747f1420c7d"
+                                                },
+                                                "category_id": {
+                                                    "type": "string",
+                                                    "example": "0ba7394a-e4a7-11f1-9344-7cfa802770cb"
+                                                },
+                                                "type": {
+                                                    "type": "string",
+                                                    "example": "income"
+                                                },
+                                                "amount": {
+                                                    "type": "number",
+                                                    "example": 50000
+                                                },
+                                                "description": {
+                                                    "type": "string",
+                                                    "example": "Membeli makan siang",
+                                                    "nullable": true
+                                                },
+                                                "transaction_date": {
+                                                    "type": "string",
+                                                    "example": "2026-11-20"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "example": "2026-11-20T06:26:44.000000Z"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "example": "2026-11-20T06:26:44.000000Z"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Transaksi berhasil disimpan."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validasi gagal",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/users/{id}": {
+            "delete": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Menghapus user",
+                "description": "Menghapus user berdasarkan ID.",
+                "operationId": "0b4133ed462528a5e648b88ead11e929",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID user yang akan dihapus",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "01a1fdd4-b997-73bf-b43b-5cafcd4279df"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil menghapus user",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Berhasil menghapus user"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Belum login / token tidak valid",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Akun tidak sesuai dengan yang login",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Akun tidak sesuai dengan yang login"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Terjadi kesalahan pada server",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Terjadi kesalahan pada server"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
                             }
                         }
                     }
@@ -269,6 +639,14 @@
         {
             "name": "Auth",
             "description": "Auth"
+        },
+        {
+            "name": "Transactions",
+            "description": "Transactions"
+        },
+        {
+            "name": "User",
+            "description": "User"
         }
     ]
 }

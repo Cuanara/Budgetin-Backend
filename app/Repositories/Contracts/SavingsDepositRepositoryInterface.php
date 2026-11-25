@@ -12,7 +12,7 @@ interface SavingsDepositRepositoryInterface
 
     public function findSavingsGoalForUpdate(
         string $id,
-        int $userId
+        string $userId
     ): SavingsGoal;
 
     public function create(
