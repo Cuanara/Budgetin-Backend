@@ -221,6 +221,12 @@ return [
         */
         'securityDefinitions' => [
             'securitySchemes' => [
+                'bearerAuth' => [
+                    'type' => 'http',
+                    'scheme'=> 'bearer',
+                    'bearerFormat'=> 'JWT',
+                    'description' => 'Masukkan token autentikasi.',
+                ],
                 /*
                  * Examples of Security schemes
                  */

@@ -244,6 +244,404 @@
                 ]
             }
         },
+        "/api/savings-goals/{savingsGoalId}/deposits": {
+            "get": {
+                "tags": [
+                    "Savings Deposits"
+                ],
+                "summary": "Menampilkan riwayat setoran tabungan",
+                "description": "Mengambil seluruh riwayat setoran berdasarkan ID target tabungan.",
+                "operationId": "7cd7454aaec58cf9ec68d7166c6f6797",
+                "parameters": [
+                    {
+                        "name": "savingsGoalId",
+                        "in": "path",
+                        "description": "UUID target tabungan",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Riwayat setoran berhasil diambil."
+                    },
+                    "401": {
+                        "description": "Unauthenticated."
+                    },
+                    "404": {
+                        "description": "Target tabungan tidak ditemukan."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Savings Deposits"
+                ],
+                "summary": "Menambahkan setoran tabungan",
+                "description": "Menyimpan setoran ke target tabungan dan memperbarui saldo Wallet.",
+                "operationId": "4416bac6f73839fa7c42c48d1ec36907",
+                "parameters": [
+                    {
+                        "name": "savingsGoalId",
+                        "in": "path",
+                        "description": "UUID target tabungan",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "amount",
+                                    "deposit_date"
+                                ],
+                                "properties": {
+                                    "amount": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 50000
+                                    },
+                                    "deposit_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-11-25"
+                                    },
+                                    "notes": {
+                                        "type": "string",
+                                        "example": "Setoran tabungan bulanan",
+                                        "nullable": true,
+                                        "maxLength": 255
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Setoran tabungan berhasil disimpan."
+                    },
+                    "401": {
+                        "description": "Unauthenticated."
+                    },
+                    "404": {
+                        "description": "Target tabungan tidak ditemukan."
+                    },
+                    "422": {
+                        "description": "Validasi gagal atau saldo Wallet tidak mencukupi."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/savings-goals": {
+            "get": {
+                "tags": [
+                    "Savings Goals"
+                ],
+                "summary": "Menampilkan semua data tabungan",
+                "description": "Mengambil seluruh target tabungan milik pengguna yang sedang login.",
+                "operationId": "c9652797bb09dc637d1208229ae5d412",
+                "responses": {
+                    "200": {
+                        "description": "Data tabungan berhasil diambil."
+                    },
+                    "401": {
+                        "description": "Unauthenticated."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Savings Goals"
+                ],
+                "summary": "Membuat target tabungan",
+                "description": "Membuat target tabungan baru untuk pengguna yang sedang login.",
+                "operationId": "be46d7f768cce40c5ae7c8cba9cbcbb7",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "target_amount"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Dana Darurat",
+                                        "maxLength": 150
+                                    },
+                                    "target_amount": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 1000000
+                                    },
+                                    "target_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-12-31",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Tabungan berhasil dibuat."
+                    },
+                    "401": {
+                        "description": "Unauthenticated."
+                    },
+                    "422": {
+                        "description": "Validasi gagal."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/savings-goals/{savings_goal}": {
+            "get": {
+                "tags": [
+                    "Savings Goals"
+                ],
+                "summary": "Menampilkan detail tabungan",
+                "description": "Mengambil detail target tabungan berdasarkan ID.",
+                "operationId": "84f38e15ceb1970d29c1409a36033ff1",
+                "parameters": [
+                    {
+                        "name": "savings_goal",
+                        "in": "path",
+                        "description": "UUID target tabungan",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail tabungan berhasil diambil."
+                    },
+                    "401": {
+                        "description": "Unauthenticated."
+                    },
+                    "404": {
+                        "description": "Data tabungan tidak ditemukan."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Savings Goals"
+                ],
+                "summary": "Memperbarui target tabungan",
+                "description": "Memperbarui data target tabungan berdasarkan ID.",
+                "operationId": "db8a156084b2f8f9417e3ab94e729134",
+                "parameters": [
+                    {
+                        "name": "savings_goal",
+                        "in": "path",
+                        "description": "UUID target tabungan",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "target_amount"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Dana Pendidikan",
+                                        "maxLength": 150
+                                    },
+                                    "target_amount": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 2000000
+                                    },
+                                    "target_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-12-31",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Tabungan berhasil diperbarui."
+                    },
+                    "401": {
+                        "description": "Unauthenticated."
+                    },
+                    "422": {
+                        "description": "Validasi gagal."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Savings Goals"
+                ],
+                "summary": "Menghapus target tabungan",
+                "description": "Menghapus target tabungan berdasarkan ID.",
+                "operationId": "512da3538bd6e7771fbf3f59a189589d",
+                "parameters": [
+                    {
+                        "name": "savings_goal",
+                        "in": "path",
+                        "description": "UUID target tabungan",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Tabungan berhasil dihapus."
+                    },
+                    "401": {
+                        "description": "Unauthenticated."
+                    },
+                    "404": {
+                        "description": "Data tabungan tidak ditemukan."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Savings Goals"
+                ],
+                "summary": "Memperbarui target tabungan",
+                "description": "Memperbarui data target tabungan berdasarkan ID.",
+                "operationId": "f4441b98934c42af26843560dd4fef16",
+                "parameters": [
+                    {
+                        "name": "savings_goal",
+                        "in": "path",
+                        "description": "UUID target tabungan",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "target_amount"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Dana Pendidikan",
+                                        "maxLength": 150
+                                    },
+                                    "target_amount": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 2000000
+                                    },
+                                    "target_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-12-31",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Tabungan berhasil diperbarui."
+                    },
+                    "401": {
+                        "description": "Unauthenticated."
+                    },
+                    "422": {
+                        "description": "Validasi gagal."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/transactions": {
             "get": {
                 "tags": [
@@ -392,7 +790,6 @@
                             "schema": {
                                 "required": [
                                     "category_id",
-                                    "wallet_id",
                                     "type",
                                     "amount",
                                     "transaction_date"
@@ -406,7 +803,14 @@
                                     "wallet_id": {
                                         "type": "string",
                                         "format": "uuid",
-                                        "example": "0ba7394a-e4a7-11f1-9344-7cfa802770cc"
+                                        "example": "0ba7394a-e4a7-11f1-9344-7cfa802770cc",
+                                        "nullable": true
+                                    },
+                                    "savings_goal_id": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "example": "0ba7394a-e4a7-11f1-9344-7cfa802770cd",
+                                        "nullable": true
                                     },
                                     "type": {
                                         "type": "string",
@@ -419,7 +823,7 @@
                                     "amount": {
                                         "type": "number",
                                         "format": "float",
-                                        "example": 50000
+                                        "example": 100000
                                     },
                                     "transaction_date": {
                                         "type": "string",
@@ -428,7 +832,12 @@
                                     },
                                     "description": {
                                         "type": "string",
-                                        "example": "Membeli makan siang",
+                                        "example": "Makan / Bonus Januari",
+                                        "nullable": true
+                                    },
+                                    "notes": {
+                                        "type": "string",
+                                        "example": "Catatan tambahan",
                                         "nullable": true
                                     }
                                 },
@@ -444,6 +853,14 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Transaksi berhasil disimpan."
+                                        },
                                         "data": {
                                             "properties": {
                                                 "id": {
@@ -454,17 +871,21 @@
                                                     "type": "string",
                                                     "example": "0ba7394a-e4a7-11f1-9344-7cfa802770cb"
                                                 },
+                                                "wallet_id": {
+                                                    "type": "string",
+                                                    "example": "0ba7394a-e4a7-11f1-9344-7cfa802770cc"
+                                                },
                                                 "type": {
                                                     "type": "string",
                                                     "example": "income"
                                                 },
                                                 "amount": {
                                                     "type": "number",
-                                                    "example": 50000
+                                                    "example": 100000
                                                 },
                                                 "description": {
                                                     "type": "string",
-                                                    "example": "Membeli makan siang",
+                                                    "example": "Makan / Bonus Januari",
                                                     "nullable": true
                                                 },
                                                 "transaction_date": {
@@ -481,10 +902,6 @@
                                                 }
                                             },
                                             "type": "object"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Transaksi berhasil disimpan."
                                         }
                                     },
                                     "type": "object"
@@ -631,7 +1048,9 @@
         "securitySchemes": {
             "bearerAuth": {
                 "type": "http",
-                "scheme": "bearer"
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+                "description": "Masukkan token autentikasi."
             }
         }
     },
@@ -639,6 +1058,14 @@
         {
             "name": "Auth",
             "description": "Auth"
+        },
+        {
+            "name": "Savings Deposits",
+            "description": "Savings Deposits"
+        },
+        {
+            "name": "Savings Goals",
+            "description": "Savings Goals"
         },
         {
             "name": "Transactions",
