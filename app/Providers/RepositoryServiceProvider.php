@@ -4,10 +4,12 @@ namespace App\Providers;
 
 use App\Repositories\AuthRepository;
 use App\Repositories\Contracts\AuthRepositoryInterface;
+use App\Repositories\Contracts\EmailVerificationRepositoryInterface;
 use App\Repositories\Contracts\TransactionRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Contracts\SavingsGoalRepositoryInterface;
 use App\Repositories\Contracts\SavingsDepositRepositoryInterface;
+use App\Repositories\EmailVerificationRepository;
 use App\Repositories\TransactionRepository;
 use App\Repositories\UserRepository;
 use App\Repositories\SavingsGoalRepository;
@@ -28,5 +30,6 @@ class RepositoryServiceProvider extends ServiceProvider
         TransactionRepositoryInterface::class => TransactionRepository::class,
         SavingsGoalRepositoryInterface::class => SavingsGoalRepository::class,
         SavingsDepositRepositoryInterface::class => SavingsDepositRepository::class,
+        EmailVerificationRepositoryInterface::class => EmailVerificationRepository::class,
     ];
 }

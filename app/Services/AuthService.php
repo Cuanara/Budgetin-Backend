@@ -3,12 +3,16 @@
 namespace App\Services;
 
 use App\Exceptions\AuthException;
+use App\Mail\OtpMail;
 use App\Models\User;
 use App\Repositories\Contracts\AuthRepositoryInterface;
+use App\Repositories\Contracts\EmailVerificationRepositoryInterface;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 /**
@@ -32,9 +36,71 @@ class AuthService extends BaseService
     private const REUSE_GRACE_SECONDS = 10;
 
     public function __construct(
-        protected AuthRepositoryInterface $authRepository
+        protected AuthRepositoryInterface $authRepository,
+        protected EmailVerificationRepositoryInterface $emailVerificationRepository,
     ) {
         parent::__construct($authRepository);
+    }
+
+    /**
+     * Registrasi user baru lalu kirim OTP verifikasi ke email.
+     * Gagal kirim email tidak membatalkan registrasi; user bisa minta kirim ulang.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    public function register(array $data): User
+    {
+        /** @var User $user */
+        $user = $this->create($data);
+
+        try {
+            $this->sendVerificationOtp($user);
+        } catch (\Throwable $e) {
+            Log::warning('Gagal mengirim OTP registrasi: '.$e->getMessage(), [
+                'user_id' => $user->id,
+                'exception' => $e,
+            ]);
+        }
+
+        return $user;
+    }
+
+    /**
+     * Verifikasi email dengan kode OTP.
+     *
+     * @throws AuthException 404 user tidak ditemukan, 422 OTP salah/kedaluwarsa, 429 terlalu banyak percobaan
+     */
+    public function verifyEmailOtp(string $email, string $otp): User
+    {
+        $user = $this->findUnverifiedUser($email);
+
+        [$status, $remaining] = $this->emailVerificationRepository->verifyOtp($user, $otp);
+
+        return match ($status) {
+            'ok' => $user->refresh(),
+            'expired' => throw new AuthException('Kode OTP sudah kedaluwarsa. Silakan minta kode baru.', 422),
+            'too_many_attempts' => throw new AuthException('Terlalu banyak percobaan. Silakan minta kode baru.', 429),
+            'invalid' => throw new AuthException("Kode OTP salah. Sisa percobaan: {$remaining}.", 422),
+            default => throw new AuthException('Kode OTP tidak ditemukan. Silakan minta kode baru.', 422),
+        };
+    }
+
+    /**
+     * Kirim ulang OTP verifikasi email.
+     *
+     * @throws AuthException 404 user tidak ditemukan, 422 sudah terverifikasi, 429 terlalu cepat
+     */
+    public function resendEmailOtp(string $email): void
+    {
+        $user = $this->findUnverifiedUser($email);
+
+        $wait = $this->emailVerificationRepository->secondsUntilResend($user);
+
+        if ($wait > 0) {
+            throw new AuthException("Tunggu {$wait} detik sebelum meminta kode baru.", 429);
+        }
+
+        $this->sendVerificationOtp($user);
     }
 
     /**
@@ -229,5 +295,35 @@ class AuthService extends BaseService
             'user_agent' => $request->userAgent(),
             'ip_address' => $request->ip(),
         ];
+    }
+
+    /**
+     * Buat OTP baru lewat repository lalu kirim ke email user.
+     */
+    private function sendVerificationOtp(User $user): void
+    {
+        $code = $this->emailVerificationRepository->createOtp($user);
+
+        Mail::to($user->email)->send(
+            new OtpMail($user->name, $code, (int) config('otp.expires_in', 10))
+        );
+    }
+
+    /**
+     * @throws AuthException
+     */
+    private function findUnverifiedUser(string $email): User
+    {
+        $user = $this->authRepository->findByEmail(Str::lower($email));
+
+        if ($user === null) {
+            throw new AuthException('User tidak ditemukan', 404);
+        }
+
+        if ($user->email_verified_at !== null) {
+            throw new AuthException('Email sudah terverifikasi', 422);
+        }
+
+        return $user;
     }
 }

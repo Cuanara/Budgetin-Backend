@@ -79,7 +79,7 @@
                             "schema": {
                                 "required": [
                                     "credential",
-                                    "device_name"
+                                    "remember"
                                 ],
                                 "properties": {
                                     "credential": {
@@ -161,6 +161,108 @@
                     },
                     "422": {
                         "description": "Validasi gagal"
+                    }
+                }
+            }
+        },
+        "/api/verify-otp": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Verifikasi email dengan kode OTP",
+                "description": "Mencocokkan kode OTP yang dikirim ke email saat registrasi. Jika benar, email_verified_at diisi dan user dapat login.",
+                "operationId": "c4e4be2444463a153f1ca5669741bc89",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "otp"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "user@example.com"
+                                    },
+                                    "otp": {
+                                        "type": "string",
+                                        "pattern": "^[0-9]{6}$",
+                                        "example": "123456",
+                                        "maxLength": 6,
+                                        "minLength": 6
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Email berhasil diverifikasi"
+                    },
+                    "404": {
+                        "description": "User tidak ditemukan"
+                    },
+                    "422": {
+                        "description": "Validasi gagal / kode OTP salah / kedaluwarsa / tidak ditemukan / email sudah terverifikasi"
+                    },
+                    "429": {
+                        "description": "Terlalu banyak percobaan, silakan minta kode baru"
+                    },
+                    "500": {
+                        "description": "Terjadi kesalahan pada server"
+                    }
+                }
+            }
+        },
+        "/api/resend-otp": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Kirim ulang kode OTP verifikasi email",
+                "description": "Mengirim kode OTP baru ke email. Kode lama otomatis tidak berlaku. Ada jeda minimal 60 detik antar permintaan.",
+                "operationId": "5034e3809df3c665692b179099da36f3",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "user@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Kode OTP baru telah dikirim ke email"
+                    },
+                    "404": {
+                        "description": "User tidak ditemukan"
+                    },
+                    "422": {
+                        "description": "Validasi gagal / email sudah terverifikasi"
+                    },
+                    "429": {
+                        "description": "Terlalu cepat meminta kode baru"
+                    },
+                    "500": {
+                        "description": "Terjadi kesalahan pada server"
                     }
                 }
             }
