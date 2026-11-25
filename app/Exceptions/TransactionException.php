@@ -16,4 +16,3 @@ class TransactionException extends Exception
         return $this->getCode();
     }
 }
-

@@ -119,7 +119,7 @@ class TransactionRepository extends BaseRepository implements TransactionReposit
             }
 
             if (! empty($data['description']) && ! empty($data['notes']) && $data['description'] !== $data['notes']) {
-                $data['notes'] = $data['description'] . ' - ' . $data['notes'];
+                $data['notes'] = $data['description'].' - '.$data['notes'];
             } elseif (! empty($data['description']) && empty($data['notes'])) {
                 $data['notes'] = $data['description'];
             }
