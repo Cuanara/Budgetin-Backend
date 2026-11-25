@@ -89,7 +89,7 @@ class TransactionController extends Controller
         } catch (TransactionException $e) {
             return ResponseHelper::error($e->getMessage(), $e->getStatusCode());
         } catch (\Throwable $e) {
-            Log::error('Error saat menyimpan transaksi: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Error saat menyimpan transaksi: '.$e->getMessage(), ['exception' => $e]);
 
             return ResponseHelper::error('Terjadi kesalahan pada server', 500);
         }
