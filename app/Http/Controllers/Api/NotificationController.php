@@ -7,6 +7,7 @@ use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Notification\IndexNotificationRequest;
 use App\Http\Requests\Notification\UpdateNotificationRequest;
+use App\Http\Resources\NotificationResource;
 use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
@@ -78,7 +79,7 @@ class NotificationController extends Controller
             $perPage
         );
 
-        return ResponseHelper::success($notifications, 'Notifikasi berhasil diambil');
+        return ResponseHelper::success(new NotificationResource($notifications), 'Notifikasi berhasil diambil');
     }
 
     #[OA\Patch(
@@ -125,7 +126,7 @@ class NotificationController extends Controller
                 return ResponseHelper::error('Notifikasi tidak ada', 404);
             }
 
-            return ResponseHelper::success($notification, 'Notifikasi ditandai sudah dibaca');
+            return ResponseHelper::success(new NotificationResource($notification), 'Notifikasi ditandai sudah dibaca');
         } catch (AuthException $e) {
             return ResponseHelper::error($e->getMessage(), $e->getStatusCode());
         } catch (\Throwable $e) {
