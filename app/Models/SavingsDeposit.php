@@ -32,7 +32,7 @@ class SavingsDeposit extends Model
 
     public function savingsGoal(): BelongsTo
     {
-        return $this->belongsTo(SavingsGoal::class);
+        return $this->belongsTo(SavingsGoal::class, 'savings_goal_id');
     }
 
     public function wallet(): BelongsTo

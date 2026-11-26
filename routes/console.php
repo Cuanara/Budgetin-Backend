@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('budget:check-rollover')->monthlyOn(1, '00:01');
+Schedule::command('model:prune')->daily();

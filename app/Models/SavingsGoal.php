@@ -40,7 +40,7 @@ class SavingsGoal extends Model
 
     public function deposits(): HasMany
     {
-        return $this->hasMany(SavingsDeposit::class);
+        return $this->hasMany(SavingsDeposit::class, 'savings_goal_id');
     }
 
     public function wishlists(): HasMany
