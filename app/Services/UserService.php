@@ -12,10 +12,6 @@ use App\Repositories\Contracts\UserRepositoryInterface;
  */
 class UserService extends BaseService
 {
-    private const AVATAR_DISK = 'public';
-
-    private const AVATAR_DIR = 'avatars';
-
     public function __construct(
         protected UserRepositoryInterface $userRepository
     ) {

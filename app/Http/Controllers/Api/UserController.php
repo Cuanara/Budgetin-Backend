@@ -17,10 +17,7 @@ class UserController extends Controller
         private UserService $userService
     ) {}
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateUserRequest $request, string $id)
+    public function update(UpdateUserRequest $request)
     {
         return new UserResource($request->validated());
     }

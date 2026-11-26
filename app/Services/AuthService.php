@@ -7,7 +7,7 @@ use App\Mail\OtpMail;
 use App\Models\User;
 use App\Repositories\Contracts\AuthRepositoryInterface;
 use App\Repositories\Contracts\EmailVerificationRepositoryInterface;
-use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -23,7 +23,7 @@ use Illuminate\Support\Str;
  *     token_type: string,
  *     expires_in: int,
  *     refresh_token: string,
- *     refresh_expires_at: Carbon
+ *     refresh_expires_at: CarbonInterface
  * }
  * @phpstan-type ClientMeta array{user_agent?: string|null, ip_address?: string|null}
  */

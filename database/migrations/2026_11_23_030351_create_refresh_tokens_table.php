@@ -32,8 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (! Schema::hasTable('refresh_tokens')) {
-            Schema::dropIfExists('refresh_tokens');
-        }
+        Schema::dropIfExists('refresh_tokens');
     }
 };

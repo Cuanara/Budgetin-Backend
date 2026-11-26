@@ -24,8 +24,8 @@ class StoreSavingsDepositRequest extends FormRequest
     {
         return [
             'amount' => ['required', 'numeric', 'min:1'],
-            'deposit_date'=> ['required', 'date'],
-            'notes' =>['nullable', 'string', 'max:255'],
+            'deposit_date' => ['required', 'date'],
+            'notes' => ['nullable', 'string', 'max:255'],
         ];
     }
 

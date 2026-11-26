@@ -29,8 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (! Schema::hasTable('email_verification_otps')) {
-            Schema::dropIfExists('email_verification_otps');
-        }
+        Schema::dropIfExists('email_verification_otps');
     }
 };
