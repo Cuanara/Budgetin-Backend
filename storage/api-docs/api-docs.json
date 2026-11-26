@@ -346,6 +346,291 @@
                 ]
             }
         },
+        "/api/budgets": {
+            "get": {
+                "tags": [
+                    "Budget"
+                ],
+                "summary": "Ambil data budget dan alokasi",
+                "description": "Mengembalikan data budget, total pemasukan, alokasi kategori, persentase diagram, dan nominal terpakai untuk bulan yang dipilih.",
+                "operationId": "7f0a8c11e5e12dff6b645dbd70697122",
+                "responses": {
+                    "200": {
+                        "description": "Data budget berhasil diambil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data budget berhasil diambil"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "example": "01a1f7a2-cf56-71b0-acd3-c747f1420c7d"
+                                                },
+                                                "month": {
+                                                    "type": "integer",
+                                                    "example": 11
+                                                },
+                                                "year": {
+                                                    "type": "integer",
+                                                    "example": 2026
+                                                },
+                                                "total_income": {
+                                                    "type": "number",
+                                                    "example": 3000000
+                                                },
+                                                "total_allocated_percentage": {
+                                                    "type": "number",
+                                                    "example": 100
+                                                },
+                                                "available_percentage": {
+                                                    "type": "number",
+                                                    "example": 0
+                                                },
+                                                "total_allocated_amount": {
+                                                    "type": "number",
+                                                    "example": 3000000
+                                                },
+                                                "total_spent_amount": {
+                                                    "type": "number",
+                                                    "example": 380000
+                                                },
+                                                "allocations": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "string",
+                                                                "example": "01a1f7a2-cf56-71b0-acd3-c747f1420c7e"
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "example": "Makan"
+                                                            },
+                                                            "percentage": {
+                                                                "type": "number",
+                                                                "example": 40
+                                                            },
+                                                            "allocated_amount": {
+                                                                "type": "number",
+                                                                "example": 1200000
+                                                            },
+                                                            "spent_amount": {
+                                                                "type": "number",
+                                                                "example": 380000
+                                                            },
+                                                            "remaining_amount": {
+                                                                "type": "number",
+                                                                "example": 820000
+                                                            },
+                                                            "percentage_used": {
+                                                                "type": "number",
+                                                                "example": 31.7
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Terjadi kesalahan pada server",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/budgets/allocations": {
+            "post": {
+                "tags": [
+                    "Budget"
+                ],
+                "summary": "Tambah kategori ke alokasi budget",
+                "description": "Menambahkan kategori budget baru. Jika total alokasi > 100%, sistem akan memotong jatah dari source_category_id / source_allocation_id yang dipilih.",
+                "operationId": "34980b49e0c03cc7c44c2a4de3ebe33c",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "percentage"
+                                ],
+                                "properties": {
+                                    "month": {
+                                        "type": "integer",
+                                        "example": 11
+                                    },
+                                    "year": {
+                                        "type": "integer",
+                                        "example": 2026
+                                    },
+                                    "category_id": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "example": "0ba7394a-e4a7-11f1-9344-7cfa802770cb",
+                                        "nullable": true
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Hiburan",
+                                        "nullable": true
+                                    },
+                                    "percentage": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 10
+                                    },
+                                    "source_category_id": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "example": "0ba7394a-e4a7-11f1-9344-7cfa802770cc",
+                                        "nullable": true
+                                    },
+                                    "source_allocation_id": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Kategori budget berhasil ditambahkan",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validasi gagal atau alokasi melebihi 100%",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Terjadi kesalahan pada server",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/budgets/allocations/{id}": {
+            "delete": {
+                "tags": [
+                    "Budget"
+                ],
+                "summary": "Hapus alokasi kategori budget",
+                "operationId": "c101a4bf51373d41f556bc3fc4e66d36",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID alokasi budget",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Alokasi kategori budget berhasil dihapus",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Data tidak ditemukan",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Terjadi kesalahan pada server",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/savings-goals/{savingsGoalId}/deposits": {
             "get": {
                 "tags": [
@@ -1160,6 +1445,10 @@
         {
             "name": "Auth",
             "description": "Auth"
+        },
+        {
+            "name": "Budget",
+            "description": "Budget"
         },
         {
             "name": "Savings Deposits",
