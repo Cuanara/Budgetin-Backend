@@ -1,7 +1,10 @@
+
 <?php
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\TransactionController;
+use App\Http\Controllers\Api\SavingsGoalController;
+use App\Http\Controllers\Api\SavingsDepositController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\WishlistController;
 use Illuminate\Support\Facades\Route;
@@ -22,4 +25,11 @@ Route::middleware('auth:api')->group(function () {
     Route::apiResource('wishlists', WishlistController::class);
 
     Route::apiResource('transactions', TransactionController::class);
+
+    // Savings Deposits
+    Route::get('savings-goals/{savingsGoalId}/deposits', [SavingsDepositController::class, 'index']);
+
+    Route::post('savings-goals/{savingsGoalId}/deposits', [SavingsDepositController::class, 'store']);
+
+    Route::apiResource('savings-goals', SavingsGoalController::class);
 });
