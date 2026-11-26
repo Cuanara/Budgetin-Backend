@@ -232,8 +232,8 @@
                 "tags": [
                     "Budget"
                 ],
-                "summary": "Ambil data budget dan alokasi bulan ini",
-                "description": "Mengembalikan data budget bulan berjalan, total pemasukan (100% saldo main wallet), alokasi kategori, persentase diagram, dan nominal terpakai.",
+                "summary": "Ambil data budget dan alokasi",
+                "description": "Mengembalikan data budget, total pemasukan, alokasi kategori, persentase diagram, dan nominal terpakai untuk bulan yang dipilih.",
                 "operationId": "7f0a8c11e5e12dff6b645dbd70697122",
                 "responses": {
                     "200": {
@@ -263,10 +263,6 @@
                                                 "year": {
                                                     "type": "integer",
                                                     "example": 2026
-                                                },
-                                                "pemasukan": {
-                                                    "type": "number",
-                                                    "example": 3000000
                                                 },
                                                 "total_income": {
                                                     "type": "number",
@@ -362,8 +358,8 @@
                 "tags": [
                     "Budget"
                 ],
-                "summary": "Tambah kategori ke alokasi budget bulan ini",
-                "description": "Menambahkan kategori budget bulan berjalan. Jika total alokasi > 100%, sistem akan memotong jatah dari source_category_id / source_allocation_id yang dipilih.",
+                "summary": "Tambah kategori ke alokasi budget",
+                "description": "Menambahkan kategori budget baru. Jika total alokasi > 100%, sistem akan memotong jatah dari source_category_id / source_allocation_id yang dipilih.",
                 "operationId": "34980b49e0c03cc7c44c2a4de3ebe33c",
                 "requestBody": {
                     "required": true,
@@ -374,6 +370,14 @@
                                     "percentage"
                                 ],
                                 "properties": {
+                                    "month": {
+                                        "type": "integer",
+                                        "example": 11
+                                    },
+                                    "year": {
+                                        "type": "integer",
+                                        "example": 2026
+                                    },
                                     "category_id": {
                                         "type": "string",
                                         "format": "uuid",
@@ -486,122 +490,6 @@
                     },
                     "404": {
                         "description": "Data tidak ditemukan",
-                        "content": {
-                            "application/json": {
-                                "schema": {}
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Terjadi kesalahan pada server",
-                        "content": {
-                            "application/json": {
-                                "schema": {}
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/budgets/rollover/check": {
-            "get": {
-                "tags": [
-                    "Budget"
-                ],
-                "summary": "Cek sisa saldo budget bulan sebelumnya untuk notifikasi rollover",
-                "operationId": "f63fba7f129c3f751b2ff97db92aad2c",
-                "responses": {
-                    "200": {
-                        "description": "Hasil pengecekan sisa saldo budget bulan lalu",
-                        "content": {
-                            "application/json": {
-                                "schema": {}
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated",
-                        "content": {
-                            "application/json": {
-                                "schema": {}
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Terjadi kesalahan pada server",
-                        "content": {
-                            "application/json": {
-                                "schema": {}
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/budgets/rollover": {
-            "post": {
-                "tags": [
-                    "Budget"
-                ],
-                "summary": "Eksekusi rollover sisa budget bulan lalu ke tabungan atau budget bulan ini",
-                "operationId": "869b533d6d72f0bb3910362be15b97dc",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "action"
-                                ],
-                                "properties": {
-                                    "action": {
-                                        "type": "string",
-                                        "example": "savings",
-                                        "enum": [
-                                            "savings",
-                                            "next_month"
-                                        ]
-                                    },
-                                    "savings_goal_id": {
-                                        "type": "string",
-                                        "format": "uuid",
-                                        "nullable": true
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Rollover sisa budget berhasil diproses",
-                        "content": {
-                            "application/json": {
-                                "schema": {}
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated",
-                        "content": {
-                            "application/json": {
-                                "schema": {}
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Tidak ada sisa budget atau validasi gagal",
                         "content": {
                             "application/json": {
                                 "schema": {}
