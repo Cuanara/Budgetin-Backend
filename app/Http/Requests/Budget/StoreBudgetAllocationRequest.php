@@ -58,15 +58,14 @@ class StoreBudgetAllocationRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'category_id.exists'           => 'Kategori tidak ditemukan.',
-            'name.required_without'        => 'Nama kategori wajib diisi jika category_id tidak diberikan.',
-            'percentage.required'          => 'Persentase alokasi wajib diisi.',
-            'percentage.numeric'           => 'Persentase harus berupa angka.',
-            'percentage.min'               => 'Persentase minimal 0.01.',
-            'percentage.max'               => 'Persentase maksimal 100.',
-            'source_category_id.exists'    => 'Kategori sumber tidak ditemukan.',
-            'source_allocation_id.exists'  => 'Alokasi sumber tidak ditemukan.',
+            'category_id.exists' => 'Kategori tidak ditemukan.',
+            'name.required_without' => 'Nama kategori wajib diisi jika category_id tidak diberikan.',
+            'percentage.required' => 'Persentase alokasi wajib diisi.',
+            'percentage.numeric' => 'Persentase harus berupa angka.',
+            'percentage.min' => 'Persentase minimal 0.01.',
+            'percentage.max' => 'Persentase maksimal 100.',
+            'source_category_id.exists' => 'Kategori sumber tidak ditemukan.',
+            'source_allocation_id.exists' => 'Alokasi sumber tidak ditemukan.',
         ];
     }
 }
-

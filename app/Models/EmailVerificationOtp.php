@@ -21,6 +21,9 @@ class EmailVerificationOtp extends Model
         'attempts' => 'integer',
     ];
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
