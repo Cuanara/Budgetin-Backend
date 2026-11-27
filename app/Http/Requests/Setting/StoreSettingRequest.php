@@ -36,23 +36,6 @@ class StoreSettingRequest extends FormRequest
         return $rules;
     }
 
-    /**
-     * Tolak jika user sudah punya setting aktif (gunakan update).
-     */
-    public function after(): array
-    {
-        return [
-            function (Validator $validator) {
-                if (Setting::where('user_id', $this->user()->id)->exists()) {
-                    $validator->errors()->add(
-                        'settings',
-                        'Pengaturan notifikasi sudah ada. Gunakan endpoint update.'
-                    );
-                }
-            },
-        ];
-    }
-
     public function messages(): array
     {
         return [
