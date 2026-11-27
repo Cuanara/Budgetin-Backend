@@ -740,14 +740,14 @@
                 ]
             }
         },
-        "/api/notifications/{id}": {
+        "/api/notifications/{id}/read": {
             "patch": {
                 "tags": [
                     "Notifications"
                 ],
                 "summary": "Tandai notifikasi sudah dibaca",
                 "description": "Menandai satu notifikasi sebagai sudah dibaca berdasarkan ID.",
-                "operationId": "045a39aa726da62a6e75adf47b8b41e9",
+                "operationId": "2f5f851d2e8462879270c3970f258fec",
                 "parameters": [
                     {
                         "name": "id",
@@ -811,6 +811,128 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Kesalahan server",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/notifications/unread-count": {
+            "get": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Jumlah notifikasi belum dibaca",
+                "description": "Mengambil jumlah notifikasi yang belum dibaca milik pengguna yang sedang login.",
+                "operationId": "f3e05b69d516049be949f02a45e0eedd",
+                "responses": {
+                    "200": {
+                        "description": "Jumlah notifikasi belum dibaca berhasil diambil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Jumlah notifikasi belum dibaca berhasil diambil"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "count": {
+                                                    "type": "integer",
+                                                    "example": 3
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Tidak terautentikasi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/notifications/read-all": {
+            "patch": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Tandai semua notifikasi sudah dibaca",
+                "description": "Menandai seluruh notifikasi milik pengguna yang sedang login sebagai sudah dibaca.",
+                "operationId": "83b9087fb864a42766b641ffb7a4d351",
+                "responses": {
+                    "200": {
+                        "description": "Semua notifikasi ditandai sudah dibaca",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Semua notifikasi ditandai sudah dibaca"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "updated": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Tidak terautentikasi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
                                 }
                             }
                         }

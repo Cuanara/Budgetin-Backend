@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\BudgetController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\SavingsDepositController;
 use App\Http\Controllers\Api\SavingsGoalController;
+use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\Api\TransactionController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
@@ -25,18 +26,26 @@ Route::middleware('auth:api')->group(function () {
 
     Route::apiResource('transactions', TransactionController::class);
 
-    Route::get('budgets', [BudgetController::class, 'index']);
-    Route::post('budgets/allocations', [BudgetController::class, 'storeAllocation']);
-    Route::delete('budgets/allocations/{id}', [BudgetController::class, 'destroyAllocation']);
-    Route::get('budgets/rollover/check', [BudgetController::class, 'checkRollover']);
-    Route::post('budgets/rollover', [BudgetController::class, 'processRollover']);
+    Route::prefix('budgets')->group(function () {
+        Route::get('/', [BudgetController::class, 'index']);
+        Route::post('/allocations', [BudgetController::class, 'storeAllocation']);
+        Route::delete('/allocations/{id}', [BudgetController::class, 'destroyAllocation']);
+        Route::get('/rollover/check', [BudgetController::class, 'checkRollover']);
+        Route::post('/rollover', [BudgetController::class, 'processRollover']);
+    });
 
-    // Savings Deposits
-    Route::get('savings-goals/{savingsGoalId}/deposits', [SavingsDepositController::class, 'index']);
-
-    Route::post('savings-goals/{savingsGoalId}/deposits', [SavingsDepositController::class, 'store']);
-
+    Route::prefix('savings-goals')->group(function () {
+        Route::get('/{savingsGoalId}/deposits', [SavingsDepositController::class, 'index']);
+        Route::post('/{savingsGoalId}/deposits', [SavingsDepositController::class, 'store']);
+    });
     Route::apiResource('savings-goals', SavingsGoalController::class);
 
-    Route::apiResource('notifications', NotificationController::class)->only(['index', 'update']);
+    Route::prefix('notifications')->group(function () {
+        Route::get('/unread-count', [NotificationController::class, 'unreadCount']);
+        Route::patch('/{id}/read', [NotificationController::class, 'update']);
+        Route::patch('/read-all', [NotificationController::class, 'markAllAsRead']);
+    });
+    Route::apiResource('notifications', NotificationController::class)->only(['index']);
+
+    Route::apiResource('settings', SettingController::class)->except('index');
 });
