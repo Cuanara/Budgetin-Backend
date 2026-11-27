@@ -2,9 +2,13 @@
 
 namespace App\Services;
 
+use App\Models\Wishlist;
 use App\Notifications\WishlistDelayEnded;
 use App\Repositories\WishlistRepository;
 
+/**
+ * @extends BaseService<Wishlist>
+ */
 class WishlistService extends BaseService
 {
     public function __construct(

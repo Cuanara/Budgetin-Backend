@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Models\User;
 use App\Models\Wishlist;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -17,17 +18,29 @@ class WishlistDelayEnded extends Notification implements ShouldQueue
 
     public function __construct(public Wishlist $wishlist) {}
 
+    /**
+     * @return array<int, string>
+     */
     public function via(object $notifiable): array
     {
         $channels = ['database', 'broadcast'];
 
-        if ($notifiable->userDeviceTokens()->exists()) {
+        if ($notifiable instanceof User && $notifiable->userDeviceTokens()->exists()) {
             $channels[] = FcmChannel::class;
         }
 
         return $channels;
     }
 
+    /**
+     * @return array{
+     *     wishlist_id: string,
+     *     item_name: string,
+     *     price: float,
+     *     title: string,
+     *     message: string
+     * }
+     */
     public function toArray(object $notifiable): array
     {
         return [

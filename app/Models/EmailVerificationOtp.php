@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
@@ -34,9 +35,13 @@ class EmailVerificationOtp extends Model
         return $this->expires_at->isPast();
     }
 
-    // Hapus OTP kedaluwarsa > 1 hari via `php artisan model:prune`
-    public function prunable()
+    /**
+     * Hapus OTP kedaluwarsa > 1 hari via `php artisan model:prune`
+     *
+     * @return Builder<static>
+     */
+    public function prunable(): Builder
     {
-        return static::where('expires_at', '<', now()->subDay());
+        return static::query()->where('expires_at', '<', now()->subDay());
     }
 }

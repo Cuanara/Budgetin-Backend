@@ -143,6 +143,9 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail, Passk
         return $this->hasMany(UserDeviceToken::class);
     }
 
+    /**
+     * @return array<int, string>
+     */
     public function routeNotificationForFcm(): array
     {
         return $this->userDeviceTokens()->pluck('token')->all();

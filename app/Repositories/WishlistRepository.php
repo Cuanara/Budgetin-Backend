@@ -5,6 +5,9 @@ namespace App\Repositories;
 use App\Models\Wishlist;
 use App\Repositories\Contracts\WishlistRepositoryInterface;
 
+/**
+ * @extends BaseRepository<Wishlist>
+ */
 class WishlistRepository extends BaseRepository implements WishlistRepositoryInterface
 {
     protected function model(): string
