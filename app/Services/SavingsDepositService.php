@@ -15,6 +15,7 @@ use Illuminate\Validation\ValidationException;
 class SavingsDepositService
 {
     protected SavingsDepositRepositoryInterface $savingsDepositRepository;
+
     protected SavingsGoalRepositoryInterface $savingsGoalRepository;
     protected WishlistRepositoryInterface $wishlistRepository;
 

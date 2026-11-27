@@ -4,9 +4,9 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BudgetController;
 use App\Http\Controllers\Api\NotificationController;
-use App\Http\Controllers\Api\TransactionController;
-use App\Http\Controllers\Api\SavingsGoalController;
 use App\Http\Controllers\Api\SavingsDepositController;
+use App\Http\Controllers\Api\SavingsGoalController;
+use App\Http\Controllers\Api\TransactionController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\WishlistController;
 use App\Http\Controllers\Api\DashboardController;
@@ -23,7 +23,7 @@ Route::middleware('auth:api')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
     Route::get('me', [AuthController::class, 'me']);
 
-    Route::apiResource('users', UserController::class)->only(['update', 'destroy']);
+    Route::apiResource('users', UserController::class)->only(['destroy']);
 
     Route::apiResource('transactions', TransactionController::class);
 
@@ -52,4 +52,5 @@ Route::middleware('auth:api')->group(function () {
     Route::apiResource('savings-goals', SavingsGoalController::class);
 
     Route::get('/dashboard', [DashboardController::class, 'index']);
+    Route::apiResource('notifications', NotificationController::class)->only(['index', 'update']);
 });

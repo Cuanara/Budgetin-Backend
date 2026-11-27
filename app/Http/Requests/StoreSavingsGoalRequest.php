@@ -35,8 +35,8 @@ class StoreSavingsGoalRequest extends FormRequest
             'name.required' => 'Nama tabungan wajib diisi',
             'target_amount.required' => 'Target tabungan wajib diisi',
             'target_amount.numeric' => 'Target tabungan harus berupa angka.',
-            'target_amount.min'=> 'Target tabungan minimal 1.',
-            'target_date.after_or_equal'=> 'Tanggal target tidak boleh sebelum hari ini.',
+            'target_amount.min' => 'Target tabungan minimal 1.',
+            'target_date.after_or_equal' => 'Tanggal target tidak boleh sebelum hari ini.',
         ];
     }
 }

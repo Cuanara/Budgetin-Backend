@@ -5,7 +5,7 @@ namespace App\Repositories\Contracts;
 use App\Models\Budget;
 use App\Models\BudgetAllocation;
 
-interface BudgetRepositoryInterface
+interface BudgetRepositoryInterface extends BaseRepositoryInterface
 {
     public function getOrCreateBudget(string $userId, int $month, int $year): Budget;
 

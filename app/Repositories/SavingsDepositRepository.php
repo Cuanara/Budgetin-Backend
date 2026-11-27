@@ -2,8 +2,8 @@
 
 namespace App\Repositories;
 
-use App\Models\SavingsGoal;
 use App\Models\SavingsDeposit;
+use App\Models\SavingsGoal;
 use App\Repositories\Contracts\SavingsDepositRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 

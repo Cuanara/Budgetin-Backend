@@ -25,8 +25,8 @@ class StoreSavingsDepositRequest extends FormRequest
         return [
             'wishlist_id' => ['nullable', 'uuid', 'exists:wishlists,id'],
             'amount' => ['required', 'numeric', 'min:1'],
-            'deposit_date'=> ['required', 'date'],
-            'notes' =>['nullable', 'string', 'max:255'],
+            'deposit_date' => ['required', 'date'],
+            'notes' => ['nullable', 'string', 'max:255'],
         ];
     }
 

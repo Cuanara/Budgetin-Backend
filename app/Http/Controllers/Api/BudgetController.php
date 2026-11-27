@@ -20,7 +20,6 @@ class BudgetController extends Controller
         protected BudgetService $budgetService
     ) {}
 
-
     #[OA\Get(
         path: '/api/budgets',
         summary: 'Ambil data budget dan alokasi',
@@ -69,8 +68,8 @@ class BudgetController extends Controller
                     ]
                 )
             ),
-            new OA\Response(response: 401, description: 'Unauthenticated', content: new OA\JsonContent()),
-            new OA\Response(response: 500, description: 'Terjadi kesalahan pada server', content: new OA\JsonContent()),
+            new OA\Response(response: 401, description: 'Unauthenticated', content: new OA\JsonContent),
+            new OA\Response(response: 500, description: 'Terjadi kesalahan pada server', content: new OA\JsonContent),
         ]
     )]
     public function index(): JsonResponse
@@ -86,14 +85,13 @@ class BudgetController extends Controller
                 new BudgetResource($budget),
                 'Data budget berhasil diambil'
             );
-        }
- catch (\Throwable $e) {
-            Log::error('Error saat mengambil data budget: ' . $e->getMessage(), ['exception' => $e]);
+        } catch (\Throwable $e) {
+            Log::error('Error saat mengambil data budget: '.$e->getMessage(), ['exception' => $e]);
+
             return ResponseHelper::error('Terjadi kesalahan pada server', 500);
         }
 
     }
-
 
     #[OA\Post(
         path: '/api/budgets/allocations',
@@ -117,10 +115,10 @@ class BudgetController extends Controller
             )
         ),
         responses: [
-            new OA\Response(response: 201, description: 'Kategori budget berhasil ditambahkan', content: new OA\JsonContent()),
-            new OA\Response(response: 401, description: 'Unauthenticated', content: new OA\JsonContent()),
-            new OA\Response(response: 422, description: 'Validasi gagal atau alokasi melebihi 100%', content: new OA\JsonContent()),
-            new OA\Response(response: 500, description: 'Terjadi kesalahan pada server', content: new OA\JsonContent()),
+            new OA\Response(response: 201, description: 'Kategori budget berhasil ditambahkan', content: new OA\JsonContent),
+            new OA\Response(response: 401, description: 'Unauthenticated', content: new OA\JsonContent),
+            new OA\Response(response: 422, description: 'Validasi gagal atau alokasi melebihi 100%', content: new OA\JsonContent),
+            new OA\Response(response: 500, description: 'Terjadi kesalahan pada server', content: new OA\JsonContent),
         ]
     )]
     public function storeAllocation(StoreBudgetAllocationRequest $request): JsonResponse
@@ -134,17 +132,15 @@ class BudgetController extends Controller
                 'Kategori budget berhasil ditambahkan',
                 201
             );
-        }
- catch (BudgetException $e) {
+        } catch (BudgetException $e) {
             return ResponseHelper::error($e->getMessage(), $e->getStatusCode());
-        }
- catch (\Throwable $e) {
-            Log::error('Error saat menambahkan kategori budget: ' . $e->getMessage(), ['exception' => $e]);
+        } catch (\Throwable $e) {
+            Log::error('Error saat menambahkan kategori budget: '.$e->getMessage(), ['exception' => $e]);
+
             return ResponseHelper::error('Terjadi kesalahan pada server', 500);
         }
 
     }
-
 
     #[OA\Delete(
         path: '/api/budgets/allocations/{id}',
@@ -155,10 +151,10 @@ class BudgetController extends Controller
             new OA\Parameter(name: 'id', in: 'path', required: true, description: 'ID alokasi budget', schema: new OA\Schema(type: 'string', format: 'uuid')),
         ],
         responses: [
-            new OA\Response(response: 200, description: 'Alokasi kategori budget berhasil dihapus', content: new OA\JsonContent()),
-            new OA\Response(response: 401, description: 'Unauthenticated', content: new OA\JsonContent()),
-            new OA\Response(response: 404, description: 'Data tidak ditemukan', content: new OA\JsonContent()),
-            new OA\Response(response: 500, description: 'Terjadi kesalahan pada server', content: new OA\JsonContent()),
+            new OA\Response(response: 200, description: 'Alokasi kategori budget berhasil dihapus', content: new OA\JsonContent),
+            new OA\Response(response: 401, description: 'Unauthenticated', content: new OA\JsonContent),
+            new OA\Response(response: 404, description: 'Data tidak ditemukan', content: new OA\JsonContent),
+            new OA\Response(response: 500, description: 'Terjadi kesalahan pada server', content: new OA\JsonContent),
         ]
     )]
     public function destroyAllocation(string $id): JsonResponse
@@ -168,16 +164,13 @@ class BudgetController extends Controller
             $this->budgetService->deleteAllocation($userId, $id);
 
             return ResponseHelper::success(null, 'Alokasi kategori budget berhasil dihapus');
-        }
- catch (BudgetException $e) {
+        } catch (BudgetException $e) {
             return ResponseHelper::error($e->getMessage(), $e->getStatusCode());
-        }
- catch (\Throwable $e) {
-            Log::error('Error saat menghapus alokasi budget: ' . $e->getMessage(), ['exception' => $e]);
+        } catch (\Throwable $e) {
+            Log::error('Error saat menghapus alokasi budget: '.$e->getMessage(), ['exception' => $e]);
+
             return ResponseHelper::error('Terjadi kesalahan pada server', 500);
         }
 
     }
-
-
 }

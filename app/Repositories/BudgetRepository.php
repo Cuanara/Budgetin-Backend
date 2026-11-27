@@ -90,6 +90,7 @@ class BudgetRepository extends BaseRepository implements BudgetRepositoryInterfa
             $budget = $this->getOrCreateBudget($userId, $month, $year);
 
             $categoryId = $data['category_id'] ?? null;
+
             if (! $categoryId && ! empty($data['name'])) {
                 $category = Category::where('user_id', $userId)
                     ->where('name', $data['name'])
@@ -103,6 +104,7 @@ class BudgetRepository extends BaseRepository implements BudgetRepositoryInterfa
                         'color' => '#10B981',
                     ]);
                 }
+
                 $categoryId = $category->id;
             }
 
@@ -112,16 +114,21 @@ class BudgetRepository extends BaseRepository implements BudgetRepositoryInterfa
                     ->exists();
 
                 if ($exists) {
-                    throw new BudgetException('Kategori ini sudah ada dalam alokasi budget bulan ini.', 422);
+                    throw new BudgetException(
+                        'Kategori ini sudah ada dalam alokasi budget bulan ini.',
+                        422
+                    );
                 }
             }
 
-            $currentTotal = (float) BudgetAllocation::where('budget_id', $budget->id)->sum('percentage');
+            $currentTotal = (float) BudgetAllocation::where('budget_id', $budget->id)
+                ->sum('percentage');
+
             $newPercentage = (float) $data['percentage'];
 
-            if ($currentTotal + $newPercentage > 100) {
-                $sourceAllocation = null;
+            $sourceAllocation = null;
 
+            if ($currentTotal > 0) {
                 if (! empty($data['source_allocation_id'])) {
                     $sourceAllocation = BudgetAllocation::where('id', $data['source_allocation_id'])
                         ->where('budget_id', $budget->id)
@@ -135,15 +142,25 @@ class BudgetRepository extends BaseRepository implements BudgetRepositoryInterfa
                 }
 
                 if (! $sourceAllocation) {
-                    throw new BudgetException('Total jatah alokasi melebihi 100%. Silakan pilih kategori sumber untuk dikurangi jatahnya.', 422);
+                    throw new BudgetException(
+                        'Silakan pilih kategori sumber untuk dikurangi jatahnya.',
+                        422
+                    );
                 }
 
-                if ((float) $sourceAllocation->percentage < $newPercentage) {
-                    throw new BudgetException('Jatah kategori sumber tidak mencukupi untuk dipotong ' . $newPercentage . '%.', 422);
+                if ($sourceAllocation->percentage < $newPercentage) {
+                    throw new BudgetException(
+                        'Jatah kategori sumber tidak mencukupi untuk dipotong '.$newPercentage.'%.',
+                        422
+                    );
                 }
 
-                $sourceAllocation->percentage = (float) $sourceAllocation->percentage - $newPercentage;
-                $sourceAllocation->allocated_amount = ((float) $sourceAllocation->percentage / 100) * (float) $budget->total_income;
+                $sourceAllocation->percentage =
+                    (float) $sourceAllocation->percentage - $newPercentage;
+
+                $sourceAllocation->allocated_amount =
+                    ((float) $sourceAllocation->percentage / 100) * (float) $budget->total_income;
+
                 $sourceAllocation->save();
             }
 
@@ -185,6 +202,7 @@ class BudgetRepository extends BaseRepository implements BudgetRepositoryInterfa
 
         $budget = $this->getOrCreateBudget($userId, $month, $year);
         $total = (float) BudgetAllocation::where('budget_id', $budget->id)->sum('percentage');
+
         return $total <= 100;
     }
 

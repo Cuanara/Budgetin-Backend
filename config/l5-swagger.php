@@ -223,8 +223,8 @@ return [
             'securitySchemes' => [
                 'bearerAuth' => [
                     'type' => 'http',
-                    'scheme'=> 'bearer',
-                    'bearerFormat'=> 'JWT',
+                    'scheme' => 'bearer',
+                    'bearerFormat' => 'JWT',
                     'description' => 'Masukkan token autentikasi.',
                 ],
                 /*

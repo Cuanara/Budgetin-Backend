@@ -15,8 +15,8 @@ class SavingsDepositResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id'=> $this->id,
-            'savings_goal_id'=> $this->savings_goal_id,
+            'id' => $this->id,
+            'savings_goal_id' => $this->savings_goal_id,
             'amount' => $this->amount,
             'deposit_date' => $this->deposit_date,
             'notes' => $this->notes,
