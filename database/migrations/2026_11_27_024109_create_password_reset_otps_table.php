@@ -1,3 +1,4 @@
+
 <?php
 
 use Illuminate\Database\Migrations\Migration;
@@ -11,17 +12,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('password_reset_otps', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->foreignUuid('user_id')->constrained()->cascadeOnDelete();
-            $table->string('code');
-            $table->unsignedTinyInteger('attempts')->default(0);
-            $table->timestamp('expires_at');
-            $table->timestamps();
-            $table->softDeletes();
+        if (!Schema::hasTable('password_reset_otps')) {
+            Schema::create('password_reset_otps', function (Blueprint $table) {
+                $table->uuid('id')->primary();
+                $table->foreignUuid('user_id')->constrained();
+                $table->string('code');
+                $table->unsignedTinyInteger('attempts')->default(0);
+                $table->timestamp('expires_at');
+                $table->timestamps();
+                $table->softDeletes();
 
-            $table->index(['user_id', 'deleted_at']);
-        });
+                $table->index(['user_id', 'deleted_at']);
+            });
+        }
     }
 
     /**
