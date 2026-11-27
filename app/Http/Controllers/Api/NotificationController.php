@@ -6,12 +6,17 @@ use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Notification\IndexNotificationRequest;
 use App\Http\Resources\NotificationResource;
+use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 class NotificationController extends Controller
 {
+    public function __construct(
+        private NotificationService $notificationService
+    ) {}
+
     #[OA\Get(
         path: '/api/notifications',
         summary: 'Daftar notifikasi',
