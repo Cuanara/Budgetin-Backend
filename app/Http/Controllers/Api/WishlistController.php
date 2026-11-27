@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Wishlist\ConfirmPurchaseWishlistRequest;
 use App\Http\Requests\Wishlist\StoreWishlistRequest;
@@ -142,9 +143,7 @@ class WishlistController extends Controller
     {
         $this->wishlistService->delete($id);
 
-        return response()->json([
-            'message' => 'Wishlist berhasil dihapus.',
-        ], 200);
+        return ResponseHelper::success(null, 'Wishlist berhasil dihapus.');
     }
 
     #[OA\Post(

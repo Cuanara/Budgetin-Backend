@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Models\SavingsGoal;
 use App\Models\Wishlist;
 use App\Repositories\Contracts\WishlistRepositoryInterface;
 use Carbon\Carbon;
@@ -94,6 +95,31 @@ class WishlistRepository extends BaseRepository implements WishlistRepositoryInt
     public function deleteWishlist(Wishlist $wishlist): bool
     {
         return (bool) $wishlist->delete();
+    }
+
+    public function findOrCreateWishlistSavingsGoal(string $userId): SavingsGoal
+    {
+        return SavingsGoal::firstOrCreate(
+            ['user_id' => $userId, 'name' => 'Wishlist'],
+            [
+                'target_amount' => 0,
+                'current_amount' => 0,
+                'status' => 'active',
+            ]
+        );
+    }
+
+    public function deductSavingsGoalAmount(string $savingsGoalId, string $userId, float $amount): void
+    {
+        $savingsGoal = SavingsGoal::where('id', $savingsGoalId)
+            ->where('user_id', $userId)
+            ->lockForUpdate()
+            ->first();
+
+        if ($savingsGoal) {
+            $savingsGoal->current_amount = max(0.0, (float) $savingsGoal->current_amount - $amount);
+            $savingsGoal->save();
+        }
     }
 }
 

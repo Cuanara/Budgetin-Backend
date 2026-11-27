@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\SavingsGoal;
 use App\Models\Wishlist;
 use App\Repositories\Contracts\WishlistRepositoryInterface;
 use Carbon\Carbon;
@@ -46,14 +45,7 @@ class WishlistService
         $delayDays = (int) ($data['delay_days'] ?? 7);
 
         if (empty($data['savings_goal_id'])) {
-            $wishlistGoal = SavingsGoal::firstOrCreate(
-                ['user_id' => $userId, 'name' => 'Wishlist'],
-                [
-                    'target_amount' => 0,
-                    'current_amount' => 0,
-                    'status' => 'active',
-                ]
-            );
+            $wishlistGoal = $this->wishlistRepository->findOrCreateWishlistSavingsGoal($userId);
             $data['savings_goal_id'] = $wishlistGoal->id;
         }
 
@@ -147,15 +139,11 @@ class WishlistService
                 $remainingBalance = max(0.0, (float) $wishlist->saved_amount - (float) $wishlist->price);
 
                 if ($wishlist->savings_goal_id) {
-                    $savingsGoal = SavingsGoal::where('id', $wishlist->savings_goal_id)
-                        ->where('user_id', $userId)
-                        ->lockForUpdate()
-                        ->first();
-
-                    if ($savingsGoal) {
-                        $savingsGoal->current_amount = max(0.0, (float) $savingsGoal->current_amount - (float) $wishlist->price);
-                        $savingsGoal->save();
-                    }
+                    $this->wishlistRepository->deductSavingsGoalAmount(
+                        $wishlist->savings_goal_id,
+                        $userId,
+                        (float) $wishlist->price
+                    );
                 }
 
                 return $this->wishlistRepository->updateWishlist($wishlist, [

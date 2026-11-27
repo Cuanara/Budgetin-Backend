@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Contracts;
 
+use App\Models\SavingsGoal;
 use App\Models\Wishlist;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -22,5 +23,9 @@ interface WishlistRepositoryInterface
     public function updateWishlist(Wishlist $wishlist, array $data): Wishlist;
 
     public function deleteWishlist(Wishlist $wishlist): bool;
+
+    public function findOrCreateWishlistSavingsGoal(string $userId): SavingsGoal;
+
+    public function deductSavingsGoalAmount(string $savingsGoalId, string $userId, float $amount): void;
 }
 
