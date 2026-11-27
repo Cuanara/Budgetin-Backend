@@ -8,12 +8,14 @@ use App\Repositories\Contracts\AuthRepositoryInterface;
 use App\Repositories\Contracts\BudgetRepositoryInterface;
 use App\Repositories\Contracts\EmailVerificationRepositoryInterface;
 use App\Repositories\Contracts\NotificationRepositoryInterface;
+use App\Repositories\Contracts\PasswordResetRepositoryInterface;
 use App\Repositories\Contracts\SavingsDepositRepositoryInterface;
 use App\Repositories\Contracts\SavingsGoalRepositoryInterface;
 use App\Repositories\Contracts\TransactionRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\EmailVerificationRepository;
 use App\Repositories\NotificationRepository;
+use App\Repositories\PasswordResetRepository;
 use App\Repositories\SavingsDepositRepository;
 use App\Repositories\SavingsGoalRepository;
 use App\Repositories\TransactionRepository;
@@ -34,5 +36,6 @@ class RepositoryServiceProvider extends ServiceProvider
         SavingsGoalRepositoryInterface::class => SavingsGoalRepository::class,
         SavingsDepositRepositoryInterface::class => SavingsDepositRepository::class,
         EmailVerificationRepositoryInterface::class => EmailVerificationRepository::class,
+        PasswordResetRepositoryInterface::class => PasswordResetRepository::class,
     ];
 }

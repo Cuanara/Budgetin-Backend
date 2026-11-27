@@ -1,4 +1,3 @@
-
 <?php
 
 use App\Http\Controllers\Api\AuthController;
@@ -15,6 +14,9 @@ Route::post('login-google', [AuthController::class, 'loginGoogle'])->middleware(
 Route::post('register', [AuthController::class, 'register']);
 Route::post('verify-otp', [AuthController::class, 'verifyOtp'])->middleware('throttle:10,1');
 Route::post('resend-otp', [AuthController::class, 'resendOtp'])->middleware('throttle:3,1');
+
+Route::post('forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:5,1');
+Route::post('reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:5,1');
 
 Route::middleware('auth:api')->group(function () {
     Route::post('refresh', [AuthController::class, 'refresh'])->middleware('throttle:30,1');
@@ -33,7 +35,6 @@ Route::middleware('auth:api')->group(function () {
 
     // Savings Deposits
     Route::get('savings-goals/{savingsGoalId}/deposits', [SavingsDepositController::class, 'index']);
-
     Route::post('savings-goals/{savingsGoalId}/deposits', [SavingsDepositController::class, 'store']);
 
     Route::apiResource('savings-goals', SavingsGoalController::class);

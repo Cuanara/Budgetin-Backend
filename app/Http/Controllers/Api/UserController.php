@@ -17,9 +17,35 @@ class UserController extends Controller
         private UserService $userService
     ) {}
 
-    public function update(UpdateUserRequest $request)
+    /**
+     * Update profil pengguna.
+     */
+    public function update(UpdateUserRequest $request, string $id): JsonResponse
     {
-        return new UserResource($request->validated());
+        try {
+            $user = $this->userService->updateProfile(
+                $id,
+                $request->validated()
+            );
+
+            return ResponseHelper::success(
+                new UserResource($user),
+                'Berhasil memperbarui profil pengguna'
+            );
+        } catch (\Throwable $e) {
+            Log::error('Error saat memperbarui profil pengguna: '.$e->getMessage(), [
+                'exception' => $e,
+            ]);
+
+            return ResponseHelper::error(
+                $e instanceof \App\Exceptions\AuthException
+                    ? $e->getMessage()
+                    : 'Terjadi kesalahan pada server',
+                $e instanceof \App\Exceptions\AuthException
+                    ? $e->getCode()
+                    : 500
+            );
+        }
     }
 
     #[OA\Delete(
@@ -91,7 +117,9 @@ class UserController extends Controller
 
             return ResponseHelper::success(null, 'Berhasil menghapus user');
         } catch (\Throwable $e) {
-            Log::error('Error saat menghapus user: '.$e->getMessage(), ['exception' => $e]);
+            Log::error('Error saat menghapus user: '.$e->getMessage(), [
+                'exception' => $e,
+            ]);
 
             return ResponseHelper::error('Terjadi kesalahan pada server', 500);
         }

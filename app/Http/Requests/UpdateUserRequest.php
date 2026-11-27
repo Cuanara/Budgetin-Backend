@@ -35,6 +35,8 @@ class UpdateUserRequest extends FormRequest
                 'max:255',
                 Rule::unique('users', 'email')->ignore($userId),
             ],
+            'occupation' => ['sometimes', 'nullable',' string', ' max:255'],
+            'phone_number' => ['sometimes', 'nullable', 'string', 'max:20'],
             'avatar' => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ];
     }
@@ -64,6 +66,8 @@ class UpdateUserRequest extends FormRequest
         return [
             'name' => 'Nama',
             'email' => 'Email',
+            'occupation' => 'Pekerjaan',
+            'phone_number' => 'Nomor telepon',
             'avatar' => 'Avatar',
         ];
     }
