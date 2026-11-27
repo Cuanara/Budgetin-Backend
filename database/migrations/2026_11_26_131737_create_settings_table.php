@@ -14,7 +14,7 @@ return new class extends Migration
         if (! Schema::hasTable('notifications')) {
             Schema::create('settings', function (Blueprint $table) {
                 $table->uuid('id')->primary();
-                $table->foreignUuid('user_id')->constrained();
+                $table->foreignUuid('user_id')->unique()->constrained();
                 $table->json('settings');
                 $table->timestamps();
                 $table->softDeletes();

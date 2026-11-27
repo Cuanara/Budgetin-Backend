@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\BudgetController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\SavingsDepositController;
 use App\Http\Controllers\Api\SavingsGoalController;
+use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\Api\TransactionController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
@@ -45,4 +46,6 @@ Route::middleware('auth:api')->group(function () {
         Route::patch('/read-all', [NotificationController::class, 'markAllAsRead']);
     });
     Route::apiResource('notifications', NotificationController::class)->only(['index']);
+
+    Route::apiResource('settings', SettingController::class)->except('index');
 });
