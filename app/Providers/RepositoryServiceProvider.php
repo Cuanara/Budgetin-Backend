@@ -19,6 +19,10 @@ use App\Repositories\SavingsGoalRepository;
 use App\Repositories\TransactionRepository;
 use App\Repositories\UserRepository;
 use Illuminate\Support\ServiceProvider;
+use App\Repositories\Contracts\DashboardRepositoryInterface;
+use App\Repositories\Contracts\WishlistRepositoryInterface;
+use App\Repositories\DashboardRepository;
+use App\Repositories\WishlistRepository;
 
 class RepositoryServiceProvider extends ServiceProvider
 {
@@ -34,5 +38,7 @@ class RepositoryServiceProvider extends ServiceProvider
         SavingsGoalRepositoryInterface::class => SavingsGoalRepository::class,
         SavingsDepositRepositoryInterface::class => SavingsDepositRepository::class,
         EmailVerificationRepositoryInterface::class => EmailVerificationRepository::class,
+        DashboardRepositoryInterface::class => DashboardRepository::class,
+        WishlistRepositoryInterface::class => WishlistRepository::class,
     ];
 }

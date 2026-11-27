@@ -17,6 +17,7 @@ class SavingsGoalResource extends JsonResource
             'current_amount' => $this->current_amount,
             'target_date' => $this->target_date,
             'status' => $this->status,
+            'wishlists' => WishlistResource::collection($this->whenLoaded('wishlists')),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

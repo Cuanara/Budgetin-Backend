@@ -78,6 +78,14 @@ class SavingsDepositController extends Controller
                 required: ['amount', 'deposit_date'],
                 properties: [
                     new OA\Property(
+                        property: 'wishlist_id',
+                        type: 'string',
+                        format: 'uuid',
+                        nullable: true,
+                        description: 'Opsional: isi jika setoran ditujukan untuk item wishlist tertentu',
+                        example: '01a1f7a2-cf56-71b0-acd3-c747f1420c7e'
+                    ),
+                    new OA\Property(
                         property: 'amount',
                         type: 'number',
                         format: 'float',
