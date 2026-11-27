@@ -136,6 +136,19 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail, Passk
     }
 
     /**
+     * @return HasMany<UserDeviceToken, $this>
+     */
+    public function userDeviceTokens()
+    {
+        return $this->hasMany(UserDeviceToken::class);
+    }
+
+    public function routeNotificationForFcm(): array
+    {
+        return $this->userDeviceTokens()->pluck('token')->all();
+    }
+
+    /**
      * ID yang disimpan di klaim "sub" token JWT (UUID user).
      */
     public function getJWTIdentifier(): mixed

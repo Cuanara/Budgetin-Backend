@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Requests\Notification;
+namespace App\Http\Requests\Setting;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateNotificationRequest extends FormRequest
+class StoreSettingRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -13,13 +13,6 @@ class UpdateNotificationRequest extends FormRequest
     public function authorize(): bool
     {
         return false;
-    }
-
-    protected function prepareForValidation(): void
-    {
-        $this->merge([
-            'id' => $this->route('id'),
-        ]);
     }
 
     /**
@@ -30,15 +23,7 @@ class UpdateNotificationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'id' => ['required', 'string', 'uuid'],
-        ];
-    }
-
-    public function messages(): array
-    {
-        return [
-            'id.required' => 'ID notifikasi wajib diisi',
-            'id.uuid' => 'Format ID notifikasi tidak valid',
+            //
         ];
     }
 }

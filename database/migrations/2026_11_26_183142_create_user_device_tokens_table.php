@@ -11,14 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (! Schema::hasTable('notifications')) {
-            Schema::create('notifications', function (Blueprint $table) {
+        if (! Schema::hasTable('user_device_tokens')) {
+            Schema::create('user_device_tokens', function (Blueprint $table) {
                 $table->uuid('id')->primary();
                 $table->foreignUuid('user_id')->constrained();
-                $table->string('title');
-                $table->string('message');
-                $table->json('data')->nullable();
-                $table->boolean('is_read')->default(false);
+                $table->string('token', 512)->unique();
+                $table->enum('platform', ['web', 'android', 'ios']);
                 $table->timestamps();
                 $table->softDeletes();
             });
@@ -30,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('notifications');
+        Schema::dropIfExists('user_device_tokens');
     }
 };

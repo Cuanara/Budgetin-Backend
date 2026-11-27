@@ -2,23 +2,16 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Exceptions\AuthException;
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Notification\IndexNotificationRequest;
-use App\Http\Requests\Notification\UpdateNotificationRequest;
 use App\Http\Resources\NotificationResource;
-use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 class NotificationController extends Controller
 {
-    public function __construct(
-        protected NotificationService $notificationService
-    ) {}
-
     #[OA\Get(
         path: '/api/notifications',
         summary: 'Daftar notifikasi',
@@ -75,15 +68,16 @@ class NotificationController extends Controller
     {
         $perPage = min((int) $request->validated('per_page', 10), 100);
 
-        $notifications = $this->notificationService->getByUser(
-            $perPage
-        );
+        $notifications = $request->user()
+            ->notifications()
+            ->paginate($perPage)
+            ->through(fn ($n) => (new NotificationResource($n))->resolve());
 
-        return ResponseHelper::success(new NotificationResource($notifications), 'Notifikasi berhasil diambil');
+        return ResponseHelper::success($notifications, 'Notifikasi berhasil diambil');
     }
 
     #[OA\Patch(
-        path: '/api/notifications/{id}',
+        path: '/api/notifications/{id}/read',
         summary: 'Tandai notifikasi sudah dibaca',
         description: 'Menandai satu notifikasi sebagai sudah dibaca berdasarkan ID.',
         security: [['bearerAuth' => []]],
@@ -115,24 +109,84 @@ class NotificationController extends Controller
             new OA\Response(response: 500, description: 'Kesalahan server', content: new OA\JsonContent(ref: '#/components/schemas/ErrorResponse')),
         ]
     )]
-    public function update(UpdateNotificationRequest $request): JsonResponse
+    public function update(Request $request, string $id): JsonResponse
     {
-        try {
-            $notification = $this->notificationService->markAsRead(
-                $request->validated()
-            );
+        $notification = $request->user()->notifications()->find($id);
 
-            if ($notification === null) {
-                return ResponseHelper::error('Notifikasi tidak ada', 404);
-            }
-
-            return ResponseHelper::success(new NotificationResource($notification), 'Notifikasi ditandai sudah dibaca');
-        } catch (AuthException $e) {
-            return ResponseHelper::error($e->getMessage(), $e->getStatusCode());
-        } catch (\Throwable $e) {
-            Log::error('Error saat update notifikasi: '.$e->getMessage(), ['exception' => $e]);
-
-            return ResponseHelper::error('Terjadi kesalahan pada server', 500);
+        if ($notification === null) {
+            return ResponseHelper::error('Notifikasi tidak ada', 404);
         }
+
+        $notification->markAsRead();
+
+        return ResponseHelper::success(
+            new NotificationResource($notification),
+            'Notifikasi ditandai sudah dibaca'
+        );
+    }
+
+    #[OA\Get(
+        path: '/api/notifications/unread-count',
+        summary: 'Jumlah notifikasi belum dibaca',
+        description: 'Mengambil jumlah notifikasi yang belum dibaca milik pengguna yang sedang login.',
+        security: [['bearerAuth' => []]],
+        tags: ['Notifications'],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Jumlah notifikasi belum dibaca berhasil diambil',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'message', type: 'string', example: 'Jumlah notifikasi belum dibaca berhasil diambil'),
+                        new OA\Property(
+                            property: 'data',
+                            type: 'object',
+                            properties: [new OA\Property(property: 'count', type: 'integer', example: 3)]
+                        ),
+                    ]
+                )
+            ),
+            new OA\Response(response: 401, description: 'Tidak terautentikasi', content: new OA\JsonContent(ref: '#/components/schemas/ErrorResponse')),
+        ]
+    )]
+    public function unreadCount(Request $request): JsonResponse
+    {
+        $count = $request->user()->unreadNotifications()->count();
+
+        return ResponseHelper::success(['count' => $count], 'Jumlah notifikasi belum dibaca berhasil diambil');
+    }
+
+    #[OA\Patch(
+        path: '/api/notifications/read-all',
+        summary: 'Tandai semua notifikasi sudah dibaca',
+        description: 'Menandai seluruh notifikasi milik pengguna yang sedang login sebagai sudah dibaca.',
+        security: [['bearerAuth' => []]],
+        tags: ['Notifications'],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Semua notifikasi ditandai sudah dibaca',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'message', type: 'string', example: 'Semua notifikasi ditandai sudah dibaca'),
+                        new OA\Property(
+                            property: 'data',
+                            type: 'object',
+                            properties: [new OA\Property(property: 'updated', type: 'integer', example: 5)]
+                        ),
+                    ]
+                )
+            ),
+            new OA\Response(response: 401, description: 'Tidak terautentikasi', content: new OA\JsonContent(ref: '#/components/schemas/ErrorResponse')),
+            new OA\Response(response: 500, description: 'Kesalahan server', content: new OA\JsonContent(ref: '#/components/schemas/ErrorResponse')),
+        ]
+    )]
+    public function markAllAsRead(Request $request): JsonResponse
+    {
+        $updated = $request->user()->unreadNotifications()->update(['read_at' => now()]);
+
+        return ResponseHelper::success(['updated' => $updated], 'Semua notifikasi ditandai sudah dibaca');
     }
 }
