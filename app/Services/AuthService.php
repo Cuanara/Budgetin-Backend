@@ -4,9 +4,11 @@ namespace App\Services;
 
 use App\Exceptions\AuthException;
 use App\Mail\OtpMail;
+use App\Mail\PasswordResetOtpMail;
 use App\Models\User;
 use App\Repositories\Contracts\AuthRepositoryInterface;
 use App\Repositories\Contracts\EmailVerificationRepositoryInterface;
+use App\Repositories\Contracts\PasswordResetRepositoryInterface;
 use Carbon\CarbonInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -38,6 +40,7 @@ class AuthService extends BaseService
     public function __construct(
         protected AuthRepositoryInterface $authRepository,
         protected EmailVerificationRepositoryInterface $emailVerificationRepository,
+        protected PasswordResetRepositoryInterface $passwordResetRepository,
     ) {
         parent::__construct($authRepository);
     }
@@ -46,7 +49,7 @@ class AuthService extends BaseService
      * Registrasi user baru lalu kirim OTP verifikasi ke email.
      * Gagal kirim email tidak membatalkan registrasi; user bisa minta kirim ulang.
      *
-     * @param  array<string, mixed>  $data
+     * @param array<string, mixed> $data
      */
     public function register(array $data): User
     {
@@ -107,8 +110,8 @@ class AuthService extends BaseService
      * Login dengan email + password.
      * Mengembalikan null jika email/password salah.
      *
-     * @param  array{email: string, password: string}  $credentials
-     * @param  ClientMeta  $meta
+     * @param array{email: string, password: string} $credentials
+     * @param ClientMeta $meta
      * @return TokenPair|null
      *
      * @throws AuthException Akun disuspend / email belum diverifikasi
@@ -128,7 +131,7 @@ class AuthService extends BaseService
      * Login dengan Google: verifikasi ID token ("credential") dari front end,
      * cari/buat user, lalu kembalikan pasangan token aplikasi.
      *
-     * @param  ClientMeta  $meta
+     * @param ClientMeta $meta
      * @return TokenPair
      *
      * @throws AuthException 401 token tidak valid, 403 email belum diverifikasi / akun disuspend
@@ -168,7 +171,7 @@ class AuthService extends BaseService
      * Tukar refresh token dengan pasangan token baru (rotation).
      * Refresh token lama langsung tidak berlaku.
      *
-     * @param  ClientMeta  $meta
+     * @param ClientMeta $meta
      * @return TokenPair
      *
      * @throws AuthException 401 sesi tidak valid/berakhir, 403 akun disuspend
@@ -234,7 +237,7 @@ class AuthService extends BaseService
     /**
      * Cari user berdasarkan google_id atau email; buat baru jika belum ada.
      *
-     * @param  array<string, mixed>  $payload  payload ID token Google yang sudah terverifikasi
+     * @param array<string, mixed> $payload payload ID token Google yang sudah terverifikasi
      */
     private function findOrCreateUser(array $payload): User
     {
@@ -268,7 +271,7 @@ class AuthService extends BaseService
     /**
      * Terbitkan access token (JWT) + refresh token untuk user.
      *
-     * @param  ClientMeta  $meta
+     * @param ClientMeta $meta
      * @return TokenPair
      */
     private function issueTokens(User $user, bool $remember, array $meta): array
@@ -325,5 +328,72 @@ class AuthService extends BaseService
         }
 
         return $user;
+    }
+
+    /**
+     * Mengirim OTP untuk proses reset password.
+     *
+     * @throws AuthException
+     */
+    public function forgotPassword(string $email): void
+    {
+        $user = $this->authRepository->findByEmail(Str::lower($email));
+
+        if ($user === null) {
+            throw new AuthException('Email tidak terdaftar', 404);
+        }
+
+        $code = $this->passwordResetRepository->createOtp($user);
+
+        Mail::to($user->email)->send(
+            new PasswordResetOtpMail(
+                $user->name,
+                $code,
+                (int) config('otp.expires_in', 10)
+            )
+        );
+    }
+
+    /**
+     * Reset password menggunakan OTP.
+     *
+     * @throws AuthException
+     */
+    public function resetPassword(
+        string $email,
+        string $otp,
+        string $password
+    ): void {
+        $user = $this->authRepository->findByEmail(Str::lower($email));
+
+        if ($user === null) {
+            throw new AuthException('Email tidak terdaftar', 404);
+        }
+
+        [$status, $remaining] = DB::transaction(function () use ($user, $otp, $password): array {
+            [$status, $remaining] = $this->passwordResetRepository->verifyOtp($user, $otp);
+
+            if ($status !== 'ok') {
+                return [$status, $remaining];
+            }
+
+            $user->forceFill([
+                'password' => $password,
+            ])->save();
+
+            $this->passwordResetRepository->deleteOtp($user);
+
+            $this->authRepository->revokeAllRefreshTokens((string) $user->id);
+
+            return ['ok', 0];
+        });
+
+        match ($status) {
+            'ok' => null,
+            'expired' => throw new AuthException('Kode OTP sudah kedaluwarsa. Silakan minta kode baru.', 422),
+            'too_many_attempts' => throw new AuthException('Terlalu banyak percobaan. Silakan minta kode baru.', 429),
+            'invalid' => throw new AuthException("Kode OTP salah. Sisa percobaan: {$remaining}.", 422),
+            default => throw new AuthException('Kode OTP tidak ditemukan. Silakan minta kode baru.', 422),
+        };
     }
 }

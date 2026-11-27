@@ -11,6 +11,8 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\ResendOtpRequest;
 use App\Http\Requests\Auth\VerifyOtpRequest;
+use App\Http\Requests\Auth\ForgotPasswordRequest;
+use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Http\Resources\TokenResource;
 use App\Http\Resources\UserResource;
 use App\Services\AuthService;
@@ -308,4 +310,107 @@ class AuthController extends Controller
             'Data user berhasil diambil'
         );
     }
+
+#[OA\Post(
+    path: '/api/forgot-password',
+    summary: 'Meminta OTP untuk reset password',
+    tags: ['Auth'],
+    requestBody: new OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(
+            required: ['email'],
+            properties: [
+                new OA\Property(
+                    property: 'email',
+                    type: 'string',
+                    format: 'email',
+                    example: 'user@example.com'
+                ),
+            ]
+        )
+    ),
+    responses: [
+        new OA\Response(response: 200, description: 'OTP reset password berhasil dikirim'),
+        new OA\Response(response: 404, description: 'Email tidak terdaftar'),
+        new OA\Response(response: 422, description: 'Validasi gagal'),
+        new OA\Response(response: 500, description: 'Terjadi kesalahan pada server'),
+    ]
+)]
+public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
+{
+    try {
+        $this->authService->forgotPassword(
+            $request->validated('email')
+        );
+
+        return ResponseHelper::success(
+            null,
+            'Kode OTP reset password telah dikirim ke email Anda'
+        );
+    } catch (AuthException $e) {
+        return ResponseHelper::error(
+            $e->getMessage(),
+            $e->getStatusCode()
+        );
+    } catch (\Throwable $e) {
+        Log::error('Error saat meminta reset password: '.$e->getMessage(), [
+            'exception' => $e,
+        ]);
+
+        return ResponseHelper::error('Terjadi kesalahan pada server', 500);
+    }
+}
+
+#[OA\Post(
+    path: '/api/reset-password',
+    summary: 'Reset password menggunakan OTP',
+    tags: ['Auth'],
+    requestBody: new OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(
+            required: ['email', 'otp', 'password', 'password_confirmation'],
+            properties: [
+                new OA\Property(property: 'email', type: 'string', format: 'email', example: 'user@example.com'),
+                new OA\Property(property: 'otp', type: 'string', example: '123456'),
+                new OA\Property(property: 'password', type: 'string', format: 'password', example: 'passwordbaru123'),
+                new OA\Property(property: 'password_confirmation', type: 'string', format: 'password', example: 'passwordbaru123'),
+            ]
+        )
+    ),
+    responses: [
+        new OA\Response(response: 200, description: 'Password berhasil direset'),
+        new OA\Response(response: 404, description: 'Email atau OTP tidak ditemukan'),
+        new OA\Response(response: 422, description: 'OTP salah atau kedaluwarsa / validasi gagal'),
+        new OA\Response(response: 429, description: 'Terlalu banyak percobaan OTP'),
+        new OA\Response(response: 500, description: 'Terjadi kesalahan pada server'),
+    ]
+)]
+public function resetPassword(ResetPasswordRequest $request): JsonResponse
+{
+    try {
+        $this->authService->resetPassword(
+            $request->validated('email'),
+            $request->validated('otp'),
+            $request->validated('password')
+        );
+
+        return ResponseHelper::success(
+            null,
+            'Password berhasil direset. Silakan login kembali.'
+        );
+    } catch (AuthException $e) {
+        return ResponseHelper::error(
+            $e->getMessage(),
+            $e->getStatusCode()
+        );
+    } catch (\Throwable $e) {
+        Log::error('Error saat reset password: '.$e->getMessage(), [
+            'exception' => $e,
+        ]);
+
+        return ResponseHelper::error('Terjadi kesalahan pada server', 500);
+    }
+}
+
+
 }
