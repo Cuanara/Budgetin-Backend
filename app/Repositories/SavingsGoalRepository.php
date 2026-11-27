@@ -11,6 +11,7 @@ class SavingsGoalRepository implements SavingsGoalRepositoryInterface
     public function getAllByUser(string $userId): Collection
     {
         return SavingsGoal::where('user_id', $userId)
+            ->with('wishlists')
             ->latest()
             ->get();
     }

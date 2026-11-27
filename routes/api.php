@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\SavingsGoalController;
 use App\Http\Controllers\Api\SavingsDepositController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\WishlistController;
+use App\Http\Controllers\Api\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('login', [AuthController::class, 'login'])->middleware('throttle:5,1');
@@ -36,7 +37,10 @@ Route::middleware('auth:api')->group(function () {
     Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount']);
     Route::patch('notifications/read-all', [NotificationController::class, 'markAllAsRead']);
     Route::patch('notifications/{id}/read', [NotificationController::class, 'markAsRead']);
-    Route::apiResource('wishlists', WishlistController::class);
+    Route::apiResource('wishlists', WishlistController::class)->except(['update']);
+    Route::post('wishlists/{id}/archive', [WishlistController::class, 'archive']);
+    Route::post('wishlists/{id}/unarchive', [WishlistController::class, 'unarchive']);
+    Route::post('wishlists/{id}/confirm-purchase', [WishlistController::class, 'confirmPurchase']);
 
     Route::apiResource('transactions', TransactionController::class);
 
@@ -46,4 +50,6 @@ Route::middleware('auth:api')->group(function () {
     Route::post('savings-goals/{savingsGoalId}/deposits', [SavingsDepositController::class, 'store']);
 
     Route::apiResource('savings-goals', SavingsGoalController::class);
+
+    Route::get('/dashboard', [DashboardController::class, 'index']);
 });

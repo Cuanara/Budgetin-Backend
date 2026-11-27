@@ -23,6 +23,7 @@ class StoreSavingsDepositRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'wishlist_id' => ['nullable', 'uuid', 'exists:wishlists,id'],
             'amount' => ['required', 'numeric', 'min:1'],
             'deposit_date'=> ['required', 'date'],
             'notes' =>['nullable', 'string', 'max:255'],
@@ -32,6 +33,8 @@ class StoreSavingsDepositRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'wishlist_id.uuid' => 'Format wishlist_id tidak valid.',
+            'wishlist_id.exists' => 'Wishlist tidak ditemukan.',
             'amount.required' => 'Nominal setoran wajib diisi.',
             'amount.numeric' => 'Nominal setoran harus berupa angka.',
             'amount.min' => 'Nominal setoran minimal 1.',
